@@ -10,6 +10,21 @@
       "name": "Launch Chrome against localhost",
       "url": "http://localhost:4200",
       "webRoot": "${workspaceFolder}"
+    },
+    {
+      // Debug Angular 10 Karma Tests in VSCode
+      // https://medium.com/nextfaze/debug-angular-10-karma-tests-in-vscode-9685b0565e8
+      "type": "pwa-chrome",
+      "request": "attach",
+      "name": "Attach to Karma",
+      "address": "localhost",
+      "port": 9222,
+      "timeout": 600000,
+      "sourceMaps": true,
+      "webRoot": "${workspaceFolder}",
+      "pathMapping": {
+        "/_karma_webpack_": "${workspaceFolder}"
+      }
     }
   ]
 }
