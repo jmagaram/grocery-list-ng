@@ -4,7 +4,7 @@ I'm experimenting with Angular to build an online grocery list.
 
 ## Technology
 
-Although I really like the simplicity of one-way-data-flow and functional composition in React my top priority is a solid mobile UI framework. The official Angular Material components looks really nice. I also suspect the performance of Angular will be better than React since it doesn't use a virtual DOM.
+I'm giving this a shot rather than React because it has a really solid mobile UI framework - Angular Material. I prefer the functional and concise nature of React but am giving this a shot. Theoretically this should have better performance than React because there is no virtual DOM. I also might go all-in with Google and try out Firebase.
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.4.
 
