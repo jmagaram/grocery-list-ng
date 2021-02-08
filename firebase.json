@@ -7,7 +7,9 @@
     {
       "target": "grocery-list-ng",
       "public": "dist/grocery-list-ng",
-      "ignore": ["**/.*"],
+      "ignore": [
+        "**/.*"
+      ],
       "headers": [
         {
           "source": "*.[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].+(css|js)",

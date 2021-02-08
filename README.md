@@ -16,6 +16,10 @@ I'll keep a running log of comments about what I'm enjoying and finding frustrat
 
 ### Hassles
 
+Angular is quite verbose. A single component gets split into 3 files.
+
 ### Good stuff
+
+Angular provides everything I will probably need.
 
 Firebase authorization rules are super flexible.
