@@ -126,6 +126,10 @@
               "devServerTarget": "grocery-list-ng:serve:production"
             }
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {}
         }
       }
     }

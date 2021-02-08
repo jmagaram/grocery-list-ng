@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "grocery-list-ng-223b6"
+  },
+  "targets": {
+    "grocery-list-ng-223b6": {
+      "hosting": {
+        "grocery-list-ng": [
+          "grocery-list-ng-223b6"
+        ]
+      }
+    }
   }
 }
