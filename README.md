@@ -1,27 +1,21 @@
-# GroceryListNg
+# Grocery List
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.4.
+## About
 
-## Development server
+This project contains code for an online grocery list. Having come from a .NET/Windows backgroud, I'm using this to learn about modern web programming to see whether the newest tools and frameworks can make it easy to program web apps.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Technology
 
-## Code scaffolding
+I'm using **Angular**. I love the functional nature of React but my first priority was a super solid pixel-perfect UI and wanted to use the official Google Angular Material UI components. I also like that Angular provides everything you need in one box and the documentation is pretty good.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+I need offline data sync and decided to try **Firebase**. I experimented with AWS Amplify but had a few build problems integrating with Angular. Also Amplify doesn't make it easy (or possible) to provide flexible consumer-based authorization rules.
 
-## Build
+## Experience log
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+I'll keep a running log of comments about what I'm enjoying and finding frustrating as I build this web app.
 
-## Running unit tests
+### Hassles
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### Good stuff
 
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Firebase authorization rules are super flexible.
