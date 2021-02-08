@@ -10,6 +10,9 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 
 import { AppComponent } from './app.component';
 import { ExperimentComponent } from './experiment/experiment.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSliderModule } from '@angular/material/slider';
 
 @NgModule({
   declarations: [AppComponent, ExperimentComponent],
@@ -19,6 +22,9 @@ import { ExperimentComponent } from './experiment/experiment.component';
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     ReactiveFormsModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatSliderModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
