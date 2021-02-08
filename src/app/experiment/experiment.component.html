@@ -1,2 +1,4 @@
 <h1>Experiment</h1>
-<button (click)="onCreate()">Create</button>
+<label>Animal: <input type="text" [formControl]="animalType" /> </label>
+<label>Color: <input type="text" [formControl]="animalColor" /> </label>
+<button (click)="onCreateAnimal()">Create Animal</button>
