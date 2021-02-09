@@ -1,7 +1,9 @@
-<h1>Experiments</h1>
-<label>Animal: <input type="text" [formControl]="animalType" /> </label>
-<label>Color: <input type="text" [formControl]="animalColor" /> </label>
-<button mat-flat-button color="primary" (click)="onCreateAnimal()">
-  Create Animal
-</button>
-<mat-slider min="1" max="100" step="1" value="1"></mat-slider>
+<div style="margin: 10px">
+  <h1>Experiments</h1>
+  <label>Animal: <input type="text" [formControl]="animalType" /> </label>
+  <label>Color: <input type="text" [formControl]="animalColor" /> </label>
+  <button mat-flat-button color="primary" (click)="onCreateAnimal()">
+    Create Animal
+  </button>
+  <mat-slider min="1" max="100" step="1" value="1"></mat-slider>
+</div>
