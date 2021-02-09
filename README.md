@@ -22,4 +22,8 @@ Angular is quite verbose. A single component gets split into 3 files.
 
 Angular provides everything I will probably need.
 
+Really good Angular documentation.
+
+One-click "preview" sends current build to Firebase with a special preview URL so you can experiment with it before deciding to publish.
+
 Firebase authorization rules are super flexible.

@@ -8,7 +8,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "preview": "node scripts/preview.js"
+    "preview": "node scripts/preview.js",
+    "start firebase emulator": "node scripts/start-firebase-emulator.js"
   },
   "private": true,
   "dependencies": {
@@ -24,6 +25,7 @@
     "@angular/platform-browser-dynamic": "~11.1.2",
     "@angular/router": "~11.1.2",
     "firebase": "^8.2.6",
+    "firebaseui": "^4.7.3",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.3"

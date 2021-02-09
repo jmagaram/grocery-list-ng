@@ -47,3 +47,6 @@ testem.log
 Thumbs.db
 src/app/debug.log
 debug.log
+ui-debug.log
+firestore-debug.log
+firebase-debug.log
