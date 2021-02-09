@@ -12,7 +12,7 @@ import { AppComponent } from './app.component';
 import { ExperimentComponent } from './experiment/experiment.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSliderModule } from '@angular/material/slider';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
   declarations: [AppComponent, ExperimentComponent],
@@ -24,7 +24,7 @@ import { MatSliderModule } from '@angular/material/slider';
     ReactiveFormsModule,
     BrowserAnimationsModule,
     MatButtonModule,
-    MatSliderModule,
+    MatInputModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

@@ -1,9 +1,24 @@
 <div style="margin: 10px">
   <h1>Experiments</h1>
-  <label>Animal: <input type="text" [formControl]="animalType" /> </label>
-  <label>Color: <input type="text" [formControl]="animalColor" /> </label>
-  <button mat-flat-button color="primary" (click)="onCreateAnimal()">
-    Create Animal
-  </button>
-  <mat-slider min="1" max="100" step="1" value="1"></mat-slider>
+  <h2>Animals</h2>
+  <mat-form-field>
+    <mat-label>Animal</mat-label>
+    <input type="text" matInput [formControl]="animalType" placeholder="" />
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Color</mat-label>
+    <input type="text" matInput [formControl]="animalColor" placeholder="" />
+  </mat-form-field>
+  <div>
+    <button mat-flat-button color="primary" (click)="onCreateAnimal()">
+      Create
+    </button>
+  </div>
+  <div *ngIf="animals$ | async; let animals; else: loading">
+    <ul>
+      <li *ngFor="let a of animals">{{ a.type }} {{ a.color }}</li>
+    </ul>
+    <div *ngIf="animals.length === 0">No results</div>
+  </div>
+  <ng-template #loading><div>Loading&hellip;</div></ng-template>
 </div>
