@@ -9,41 +9,20 @@ function exec(command) {
 
 (async () => {
   const build = await prompts({
-    type: "select",
+    type: "confirm",
     name: "value",
-    message: "Build first",
-    choices: [
-      {
-        title: "Do not build",
-        description: "Use whatever is in the dist folder now",
-      },
-      {
-        title: "Quick build",
-        description: "Just npm run build",
-      },
-      {
-        title: "Full",
-        description: "Slower npm ci && npm run build",
-      },
-    ],
-    initial: 1,
+    message: "Start production build",
+    initial: true,
   });
 
-  switch (build.value) {
-    case 0:
-      break;
-    case 1:
-      exec("npm run build");
-      break;
-    case 2:
-      exec("npm ci && npm run build");
-      break;
+  if (build) {
+    exec("npm run-script prod");
   }
 
   const deploy = await prompts({
     type: "confirm",
     name: "value",
-    message: "Should deploy a preview",
+    message: "Deploy a preview",
     initial: true,
   });
 
@@ -59,4 +38,8 @@ function exec(command) {
   });
 
   exec("firebase hosting:channel:deploy " + channel.channel);
+
+  // This is really slow
+  exec("rm -rf node_modules");
+  exec("npm install");
 })();

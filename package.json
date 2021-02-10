@@ -10,7 +10,7 @@
     "e2e": "ng e2e",
     "prod": "npm ci && ng build --prod",
     "preview": "node scripts/preview.js",
-    "start firebase emulator": "node scripts/start-firebase-emulator.js"
+    "emulator": "node scripts/start-firebase-emulator.js"
   },
   "private": true,
   "dependencies": {
