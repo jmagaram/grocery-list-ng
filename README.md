@@ -26,4 +26,6 @@ Really good Angular documentation.
 
 One-click "preview" sends current build to Firebase with a special preview URL so you can experiment with it before deciding to publish.
 
+Local emulator to fake authentication.
+
 Firebase authorization rules are super flexible.
