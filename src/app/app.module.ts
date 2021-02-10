@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, Provider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -39,6 +39,21 @@ const firebaseUiConfig = {
   useRawUserCredential: true, // If set to true outputs the UserCredential object instead of firebase.User after login and signup - Default: false
 };
 
+// https://github.com/angular/angularfire/blob/master/docs/emulators/emulators.md
+// Do not understand why the port numbers are duplicated here and in the firebase.json file.
+const emulatorProviders: Provider[] = environment.useEmulators
+  ? [
+      {
+        provide: USE_AUTH_EMULATOR,
+        useValue: ['localhost', 9099],
+      },
+      {
+        provide: USE_FIRESTORE_EMULATOR,
+        useValue: ['localhost', 8080],
+      },
+    ]
+  : [];
+
 @NgModule({
   declarations: [AppComponent, ExperimentComponent, AuthPlaygroundComponent],
   imports: [
@@ -52,18 +67,7 @@ const firebaseUiConfig = {
     MatButtonModule,
     MatInputModule,
   ],
-  providers: [
-    {
-      provide: USE_AUTH_EMULATOR,
-      useValue: environment.useEmulators ? ['localhost', 9099] : undefined,
-    },
-    // { provide: USE_DATABASE_EMULATOR, useValue: environment.useEmulators ? ['localhost', 9000] : undefined },
-    {
-      provide: USE_FIRESTORE_EMULATOR,
-      useValue: environment.useEmulators ? ['localhost', 8080] : undefined,
-    },
-    // { provide: USE_FUNCTIONS_EMULATOR, useValue: environment.useEmulators ? ['localhost', 5001] : undefined },
-  ],
+  providers: [...emulatorProviders],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

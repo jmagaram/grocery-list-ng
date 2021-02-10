@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  useEmulators: true,
   firebaseConfig: {
     apiKey: 'AIzaSyAkLS7zkctOiLtuk6E7Ew_q-Ti0_tB4pYE',
     authDomain: 'grocery-list-ng-223b6.firebaseapp.com',
@@ -13,7 +14,6 @@ export const environment = {
     appId: '1:776243827964:web:b8b75b5988f85e6a8e3379',
     measurementId: 'G-HB9PSF5JGX',
   },
-  useEmulators: false,
 };
 
 /*
