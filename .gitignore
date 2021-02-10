@@ -50,3 +50,4 @@ debug.log
 ui-debug.log
 firestore-debug.log
 firebase-debug.log
+firebase-emulator-data
