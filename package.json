@@ -8,6 +8,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
+    "prod": "npm ci && ng build --prod",
     "preview": "node scripts/preview.js",
     "start firebase emulator": "node scripts/start-firebase-emulator.js"
   },
