@@ -42,6 +42,10 @@ function exec(command) {
   ]);
 
   exec("firebase hosting:channel:deploy " + channel.value);
-  exec("rm -rf node_modules");
-  exec("npm install");
+
+  // Don't think I need these lines but have a memory of having trouble running
+  // tools or building things without it.
+  //
+  // exec("rm -rf node_modules");
+  // exec("npm install");
 })();
