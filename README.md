@@ -18,6 +18,8 @@ I'll keep a running log of comments about what I'm enjoying and finding frustrat
 
 Angular is quite verbose. A single component gets split into 3 files.
 
+Couldn't test firebase security rules using the default Karma Jasmine testing framework; still don't know why. Had a lot of hassles attempting to get this working with Mocha and Chai, especially since the firebase SDK examples are in javascript not Typescript.
+
 ### Good stuff
 
 Angular provides everything I will probably need.
