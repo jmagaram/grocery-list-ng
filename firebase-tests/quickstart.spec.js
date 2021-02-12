@@ -31,7 +31,7 @@ beforeEach(async () => {
 
 before(async () => {
   // Load the rules file before the tests begin
-  const rules = fs.readFileSync("../../firestore.rules", "utf8");
+  const rules = fs.readFileSync("../firestore.rules", "utf8");
   await firebase.loadFirestoreRules({ projectId: PROJECT_ID, rules });
 });
 
