@@ -1,6 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /animals/{doc} {
+      allow read: if true;
+      allow write: if true;
+    }
     match /users/{userId} {
       allow read;
       allow create: if request.auth.uid == userId && request.resource.data.createdAt == request.time;
