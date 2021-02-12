@@ -11,7 +11,7 @@
     "prod": "npm ci && ng build --prod",
     "preview": "node scripts/preview.js",
     "emulator": "node scripts/start-firebase-emulator.js",
-    "firebase-tests": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'src/firebase-tests/**/*.spec.ts' || ECHO 'Done'"
+    "firebase-tests": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'src/firebase-tests/**/*.fbspec.ts' || ECHO 'Done'"
   },
   "private": true,
   "dependencies": {
