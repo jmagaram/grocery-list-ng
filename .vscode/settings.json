@@ -2,7 +2,8 @@
   "mochaExplorer.files": "firebase-tests/**/*.ts",
   "mochaExplorer.require": ["ts-node/register"],
   "mochaExplorer.env": {
-    "TS_NODE_COMPILER_OPTIONS": "{\"module\":\"commonjs\"}"
+    "TS_NODE_COMPILER_OPTIONS": "{\"module\":\"commonjs\"}",
+    "FIRESTORE_EMULATOR_HOST": "localhost:8080"
   },
   "mochaExplorer.autoload": true
 }
