@@ -14,7 +14,7 @@ import {
 import { TokenOptions } from '@firebase/rules-unit-testing/dist/src/api';
 import { before, beforeEach, after, afterEach, describe, it } from 'mocha';
 
-describe('typescript security tests', () => {
+describe('firestore rules tests', () => {
   /**
    * The emulator will accept any project ID for testing.
    */
@@ -66,86 +66,84 @@ describe('typescript security tests', () => {
     // );
   });
 
-  describe('My app', () => {
-    it('require users to log in before creating a profile', async () => {
-      const db = getAuthedFirestore(undefined);
-      const profile = db.collection('users').doc('alice');
-      await assertFails(profile.set({ birthday: 'January 1' }));
-    });
+  it('require users to log in before creating a profile', async () => {
+    const db = getAuthedFirestore(undefined);
+    const profile = db.collection('users').doc('alice');
+    await assertFails(profile.set({ birthday: 'January 1' }));
+  });
 
-    it('should enforce the createdAt date in user profiles', async () => {
-      const db = getAuthedFirestore({ uid: 'alice' });
-      const profile = db.collection('users').doc('alice');
-      await assertFails(profile.set({ birthday: 'January 1' }));
-      await assertSucceeds(
-        profile.set({
-          birthday: 'January 1',
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        })
-      );
-    });
+  it('should enforce the createdAt date in user profiles', async () => {
+    const db = getAuthedFirestore({ uid: 'alice' });
+    const profile = db.collection('users').doc('alice');
+    await assertFails(profile.set({ birthday: 'January 1' }));
+    await assertSucceeds(
+      profile.set({
+        birthday: 'January 1',
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      })
+    );
+  });
 
-    it('should only let users create their own profile', async () => {
-      const db = getAuthedFirestore({ uid: 'alice' });
-      await assertSucceeds(
-        db.collection('users').doc('alice').set({
-          birthday: 'January 1',
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        })
-      );
-      await assertFails(
-        db.collection('users').doc('bob').set({
-          birthday: 'January 1',
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        })
-      );
-    });
+  it('should only let users create their own profile', async () => {
+    const db = getAuthedFirestore({ uid: 'alice' });
+    await assertSucceeds(
+      db.collection('users').doc('alice').set({
+        birthday: 'January 1',
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      })
+    );
+    await assertFails(
+      db.collection('users').doc('bob').set({
+        birthday: 'January 1',
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      })
+    );
+  });
 
-    it('should let anyone read any profile', async () => {
-      const db = getAuthedFirestore(undefined);
-      const profile = db.collection('users').doc('alice');
-      await assertSucceeds(profile.get());
-    });
+  it('should let anyone read any profile', async () => {
+    const db = getAuthedFirestore(undefined);
+    const profile = db.collection('users').doc('alice');
+    await assertSucceeds(profile.get());
+  });
 
-    it('should let anyone create a room', async () => {
-      const db = getAuthedFirestore({ uid: 'alice' });
-      const room = db.collection('rooms').doc('firebase');
-      await assertSucceeds(
-        room.set({
-          owner: 'alice',
-          topic: 'All Things Firebase',
-        })
-      );
-    });
+  it('should let anyone create a room', async () => {
+    const db = getAuthedFirestore({ uid: 'alice' });
+    const room = db.collection('rooms').doc('firebase');
+    await assertSucceeds(
+      room.set({
+        owner: 'alice',
+        topic: 'All Things Firebase',
+      })
+    );
+  });
 
-    it('should force people to name themselves as room owner when creating a room', async () => {
-      const db = getAuthedFirestore({ uid: 'alice' });
-      const room = db.collection('rooms').doc('firebase');
-      await assertFails(
-        room.set({
-          owner: 'scott',
-          topic: 'Firebase Rocks!',
-        })
-      );
-    });
+  it('should force people to name themselves as room owner when creating a room', async () => {
+    const db = getAuthedFirestore({ uid: 'alice' });
+    const room = db.collection('rooms').doc('firebase');
+    await assertFails(
+      room.set({
+        owner: 'scott',
+        topic: 'Firebase Rocks!',
+      })
+    );
+  });
 
-    it('should not let one user steal a room from another user', async () => {
-      const alice = getAuthedFirestore({ uid: 'alice' });
-      const bob = getAuthedFirestore({ uid: 'bob' });
+  it('should not let one user steal a room from another user', async () => {
+    const alice = getAuthedFirestore({ uid: 'alice' });
+    const bob = getAuthedFirestore({ uid: 'bob' });
 
-      await assertSucceeds(
-        bob.collection('rooms').doc('snow').set({
-          owner: 'bob',
-          topic: 'All Things Snowboarding',
-        })
-      );
+    await assertSucceeds(
+      bob.collection('rooms').doc('snow').set({
+        owner: 'bob',
+        topic: 'All Things Snowboarding',
+      })
+    );
 
-      await assertFails(
-        alice.collection('rooms').doc('snow').set({
-          owner: 'alice',
-          topic: 'skiing > snowboarding',
-        })
-      );
-    });
+    await assertFails(
+      alice.collection('rooms').doc('snow').set({
+        owner: 'alice',
+        topic: 'skiing > snowboarding',
+      })
+    );
   });
 });
