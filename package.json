@@ -11,7 +11,8 @@
     "prod": "npm ci && ng build --prod",
     "preview": "node scripts/preview.js",
     "emulator": "node scripts/start-firebase-emulator.js",
-    "firebase-tests": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'firebase-tests/**/*.spec.ts' || ECHO 'Done'"
+    "firebase-test-options": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha --require ts-node/register 'firebase-tests/**/*.spec.ts' || ECHO 'Done'",
+    "firebase-test-project": "env TS_NODE_PROJECT=\"tsconfig-firebase.spec.json\" mocha --require ts-node/register --extensions ts,tsx --watch --watch-files './firestore.rules' './firebase-tests/math.ts' './firebase-tests/**/*.{ts,tsx}'"
   },
   "private": true,
   "dependencies": {
