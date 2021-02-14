@@ -1,20 +1,87 @@
 rules_version = '2';
+
+function isAnonymous() {
+  return 
+    request.auth != null 
+    && request.auth.token.firebase.sign_in_provider=="anonymous" 
+}
+
+function userId() {
+  return request.auth.uid;
+}
+
+function isAuthenticated() {
+  return userId() != null;
+}
+
+function userName() {
+  return request.auth.token.name;
+}
+
+function requestDocumentIdEqualsUserId() {
+  return
+    userId() == request.resource.data.id;
+}
+
 service cloud.firestore {
   match /databases/{database}/documents {
     match /animals/{doc} {
       allow read: if true;
       allow write: if true;
     }
-    match /users/{userId} {
-      allow read;
-      allow create: if request.auth.uid == userId && request.resource.data.createdAt == request.time;
+
+    match /shoppinglist/{shoppingListId} {
+
+      function ownerNameIsValid() {
+         return request.resource.data.ownerName.trim() != "";
+      }
+
+      function ownerNameIsMissing() {
+        return !("ownerName" in request.resource.data);
+      }
+
+      function ownerNameEqualsUserName() {
+        return userName() == request.resource.data.ownerName;
+      }
+
+      function noMembers() {
+        return request.resource.data.members.size() == 0;
+      }
+
+      function removeSelfFromMembers() {
+        let self = [ userId() ];
+        let changes = request.resource.data.members.diff(resource.data.members); 
+        return changes.changedKeys().hasOnly(self) && changes.removedKeys().hasOnly(self);
+      }
+
+      allow get:
+        if 
+          resource.data.id == userId()
+          || (userId() in resource.data.members);
+
+      allow delete:
+        if request.auth.uid == shoppingListId;
+
+      allow update:
+        if removeSelfFromMembers();
+
+      allow create: 
+        if 
+          isAuthenticated()
+          && requestDocumentIdEqualsUserId()
+          && noMembers()
+          && 
+            ((isAnonymous() && ownerNameIsMissing())
+            || (isAuthenticated() && ownerNameIsValid() && ownerNameEqualsUserName()));
     }
-    match /rooms/{roomId} {
-      allow read;
-      // If you create a room, you must set yourself as the owner.
-      allow create: if request.resource.data.owner == request.auth.uid;
-      // Only the room owner is allowed to modify it, and owner mustn't be able to assign his room to other user.
-      allow update: if resource.data.owner == request.auth.uid && request.resource.data.owner == request.auth.uid;
-    }  
+
+    match /listplayground/{doc} {
+      allow list: if true;
+      allow read: if false;
+    }
+
+    match /public/{doc} {
+      allow read, write:if true;
+    }
   }
 }
