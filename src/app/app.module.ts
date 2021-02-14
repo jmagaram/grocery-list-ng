@@ -1,10 +1,8 @@
 import { NgModule, Provider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
-
 import { AppRoutingModule } from './app-routing.module';
 import { environment } from './../environments/environment';
-
 import { AngularFireModule } from '@angular/fire';
 import {
   AngularFirestoreModule,
@@ -14,7 +12,6 @@ import {
   AngularFireAuthModule,
   USE_EMULATOR as USE_AUTH_EMULATOR,
 } from '@angular/fire/auth';
-
 import { AppComponent } from './app.component';
 import { ExperimentComponent } from './experiment/experiment.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -22,8 +19,21 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { AuthPlaygroundComponent } from './auth-playground/auth-playground.component';
 
-// https://github.com/angular/angularfire/blob/master/docs/emulators/emulators.md
-// Do not understand why the port numbers are duplicated here and in the firebase.json file.
+const imports = [
+  BrowserModule,
+  AppRoutingModule,
+  AngularFirestoreModule,
+  AngularFireModule.initializeApp(environment.firebaseConfig),
+  AngularFireAuthModule,
+  ReactiveFormsModule,
+  BrowserAnimationsModule,
+  MatButtonModule,
+  MatInputModule,
+];
+
+// Do not understand why the port numbers are duplicated here and in the
+// firebase.json file.
+// https://tinyurl.com/y4d4o2yk
 const emulatorProviders: Provider[] = environment.useEmulators
   ? [
       {
@@ -37,20 +47,14 @@ const emulatorProviders: Provider[] = environment.useEmulators
     ]
   : [];
 
+const providers = [emulatorProviders];
+
+export const appConfig = { imports: imports, providers: providers };
+
 @NgModule({
   declarations: [AppComponent, ExperimentComponent, AuthPlaygroundComponent],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule,
-    AngularFireAuthModule,
-    ReactiveFormsModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
-    MatInputModule,
-  ],
-  providers: [...emulatorProviders],
+  imports: [...imports],
+  providers: [...providers],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

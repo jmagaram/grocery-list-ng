@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
 
-interface Animal {
+export interface Animal {
   type: string;
   color: string;
 }
