@@ -41,19 +41,19 @@ module.exports = function (config) {
     // https://medium.com/nextfaze/debug-angular-10-karma-tests-in-vscode-9685b0565e8
     // Added browsers and customLaunchers sections; default Angular CLI did not have them
     // http://karma-runner.github.io/6.0/config/browsers.html
-    // browsers: ["ChromeHeadlessNoSandbox"],
-    // customLaunchers: {
-    //   ChromeHeadlessNoSandbox: {
-    //     base: "ChromeHeadless",
-    //     flags: [
-    //       "--no-sandbox",
-    //       "--user-data-dir=/tmp/chrome-test-profile",
-    //       "--disable-web-security",
-    //       "--remote-debugging-address=0.0.0.0",
-    //       "--remote-debugging-port=9222",
-    //     ],
-    //     debug: true,
-    //   },
-    // },
+    browsers: ["ChromeHeadlessNoSandbox"],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: "ChromeHeadless",
+        flags: [
+          "--no-sandbox",
+          "--user-data-dir=/tmp/chrome-test-profile",
+          "--disable-web-security",
+          "--remote-debugging-address=0.0.0.0",
+          "--remote-debugging-port=9222",
+        ],
+        debug: true,
+      },
+    },
   });
 };
