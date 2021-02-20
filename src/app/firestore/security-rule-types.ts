@@ -32,6 +32,11 @@
 // coded here. If the TypeScript compiler complains about type errors you can do
 // an unsafe cast like "X as unknown as number"; this is erased when transpiled
 // to javascript. Do not use the ?. operator; use the !. operator instead.
+//
+// ISSUES WITH THIS APPROACH: Optional chaining isn't supported. So this makes
+// navigating your models using standard TypeScript, like model?.member?.email,
+// really cumbersome. Instead you need to write these types of expressions using
+// the get operator, which isn't type-safe, and defeats a lot of the benefit.
 // ===========================================================================
 
 // ===========================================================================
@@ -90,7 +95,7 @@ namespace SimpleExample {
 
   const CREATE: CreateRule<PostModel, Claims> = (request, resource) =>
     isLoggedIn() &&
-    hasAllRequiredKeys(request.resource) &&
+    hasAllRequiredKeys(request.resource.data) &&
     resource.data.createdOn == request.time &&
     resource.data.modifiedOn == request.time &&
     resource.data.owner == request.auth.uid &&
@@ -103,9 +108,9 @@ namespace SimpleExample {
 
   const UPDATE: UpdateRule<PostModel, Claims> = (request, resource) =>
     resource.data.modifiedOn == request.time &&
-    resource.data.createdOn == request.resource!.createdOn && // read only
-    resource.data.owner == request.resource!.owner && // read only
-    hasAllRequiredKeys(request.resource) &&
+    resource.data.createdOn == request.resource!.data.createdOn && // read only
+    resource.data.owner == request.resource!.data.owner && // read only
+    hasAllRequiredKeys(request.resource.data) &&
     commentIsValid(resource.data.comment);
 }
 
@@ -163,14 +168,24 @@ export type ListFire<T> = {
   toSet: () => SetFire<T>;
 } & { readonly [index: number]: T };
 
+// See the PropertyNames type which can be used with the get method to ensure
+// only valid property names are used. The get method could be augmented to
+// restrict the valid return types as well but I haven't implemented this yet.
+// Here's what the code might look like.
+//
+// type Point = { x: number; y: number }; type PointProperties =
+// PropertyNames<Point, 'deep'>; let map!: MapFire<string>; let result =
+// map.get<number, 'safe', PointProperties>(['x'], 1);
 export interface MapFire<T> {
   _kind: 'Map';
   keys: () => ListFire<StringFire>;
   size: () => number;
   values: () => ListFire<T>;
   diff: (other: MapFire<T>) => MapDiff;
-  get: <U>(
-    key: StringParameter | StringParameter[] | ListFire<StringParameter>,
+  get: <U, MODE extends 'safe' | 'unsafe' = 'unsafe', KEYS = string>(
+    key: MODE extends 'unsafe'
+      ? StringParameter | StringParameter[] | ListFire<StringParameter>
+      : KEYS | KEYS[],
     defaultValue: U
   ) => T | U;
 }
@@ -328,3 +343,21 @@ export type ConvertDataModel<T> = T extends string
   : T extends { [K in keyof T]: infer V }
   ? { readonly [K in keyof T]: ConvertDataModel<T[K]> } & MapFire<V>
   : never;
+
+// Generates a type that encompasses all the valid property names for another type.
+type PropertyNames<T extends object, M extends 'deep' | 'shallow'> = {
+  [TKey in keyof T & (string | number)]: T[TKey] extends Function
+    ? never
+    : T[TKey] extends object
+    ? TKey | (M extends 'deep' ? PropertyNames<T[TKey], M> : never)
+    : TKey;
+}[keyof T & (string | number)];
+
+// Generates a type that encompasses all the valid property values for another type.
+type PropertyTypes<T extends object, M extends 'deep' | 'shallow'> = {
+  [TKey in keyof T & (string | number)]: T[TKey] extends Function
+    ? never
+    : T[TKey] extends object
+    ? T[TKey] | (M extends 'deep' ? PropertyTypes<T[TKey], M> : never)
+    : T[TKey];
+}[keyof T & (string | number)];
