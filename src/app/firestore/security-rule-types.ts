@@ -1,38 +1,37 @@
 // ===========================================================================
 // This file defines types and functions used within the Firebase security rules
-// engine. You can author your rules using these types in a friendly code editor
-// like VS Code and get compile-time checking, intellisense, and other
-// productivity features.
+// engine. You can author your rules in a limited version of TypeScript using
+// these types in a friendly code editor like VS Code and get compile-time
+// checking, intellisense, and other productivity features.
 //
+// The rules engine language is not javascript. You can't use optional chaining,
+// if-then statements, define functions that return anything but null, use
+// anonymous functions, etc. So this is all only useful if you are careful and
+// still to bare-bones javascript.
+//
+// https://firebase.google.com/docs/rules/rules-language
 // https://firebase.google.com/docs/reference/rules/rules.
 //
-// This is not a complete list of every type and function supported on the
-// server but is a good start.
+// This file is not a complete list of every type and function supported on the
+// server.
 //
 // TO USE:
 //
 // (1) Author your data models in TypeScript. (2) Convert the model to a
 // server-compatible version. This can be done automatically with TypeScript
-// conditional and mapped types. See end of this file for an example. (3) Code
-// the rules using TypeScript in a good code editor and import all the types
-// defined here. (4) Compile your code to javascript. (5) Paste relevant code
-// into the rules file or Fireward.
+// conditional and mapped types. See end of this file for an example. (3) Import
+// all the types defined here in your rules .ts and code them up in TypeScript
+// (with restrictions) in a good code editor. (4) Compile your code to
+// javascript. (5) Paste relevant code into the rules file or Fireward.
 //
-// ENHANCEMENTS: It would be great if there was a way to automatically generate
-// the rules file from TypeScript. This might be possible using tools like
-// ts-morph to take this to the next level. Linters could check for situations
-// where the code doesn't match what the server supports. Or maybe just some
-// automation to send the data to Fireward would be helpful.
+// MORE NOTES FOR CODING SECURITY RULES:
 //
-// TIPS FOR CODING SECURITY RULES:
-//
-// Javascript on the server is not the same as the client. You need to avoid
-// using if-then statements, loops, functions that return anything but a
-// boolean, arrow functions, etc. Some operators, like the list range operator
-// [i:j], can't be coded here. If the TypeScript compiler complains about type
-// errors, you can always do an unsafe cast like "X as unknown as number"; this
-// is erased when transpiled to javascript. Do not use the ?. operator; use the
-// ! operator instead.
+// Javascript on the server is not the same as the client. Avoid if-then
+// statements, loops, functions that return anything but a boolean, arrow
+// functions, and optional chaining. The list range operator [i:j], can't be
+// coded here. If the TypeScript compiler complains about type errors you can do
+// an unsafe cast like "X as unknown as number"; this is erased when transpiled
+// to javascript. Do not use the ?. operator; use the !. operator instead.
 // ===========================================================================
 
 // ===========================================================================
