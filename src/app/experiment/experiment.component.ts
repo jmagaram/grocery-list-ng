@@ -8,7 +8,7 @@ export interface Animal {
   color: string;
 }
 
-const animalCollection = 'animals';
+const animalCollection = 'animal';
 
 @Component({
   selector: 'app-experiment',

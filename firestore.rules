@@ -1,87 +1,62 @@
 rules_version = '2';
-
-function isAnonymous() {
-  return 
-    request.auth != null 
-    && request.auth.token.firebase.sign_in_provider=="anonymous" 
-}
-
-function userId() {
-  return request.auth.uid;
-}
-
-function isAuthenticated() {
-  return userId() != null;
-}
-
-function userName() {
-  return request.auth.token.name;
-}
-
-function requestDocumentIdEqualsUserId() {
-  return
-    userId() == request.resource.data.id;
-}
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /animals/{doc} {
-      allow read: if true;
-      allow write: if true;
+ 
+function isLoggedIn(request) {
+    return request.auth.uid != null;
+}
+function stringsExactlyEqual(a, b) {
+    return a == b;
+}
+
+    match /animal/{animalId} {
+        allow read: if true;
+        allow write: if true;
     }
 
-    match /shoppinglist/{shoppingListId} {
+    match /list/{listId} {
 
-      function ownerNameIsValid() {
-         return request.resource.data.ownerName.trim() != "";
-      }
-
-      function ownerNameIsMissing() {
-        return !("ownerName" in request.resource.data);
-      }
-
-      function ownerNameEqualsUserName() {
-        return userName() == request.resource.data.ownerName;
-      }
-
-      function noMembers() {
-        return request.resource.data.members.size() == 0;
-      }
-
-      function removeSelfFromMembers() {
-        let self = [ userId() ];
-        let changes = request.resource.data.members.diff(resource.data.members); 
-        return changes.changedKeys().hasOnly(self) && changes.removedKeys().hasOnly(self);
-      }
-
-      allow get:
-        if 
-          resource.data.id == userId()
-          || (userId() in resource.data.members);
-
-      allow delete:
-        if request.auth.uid == shoppingListId;
-
-      allow update:
-        if removeSelfFromMembers();
-
-      allow create: 
-        if 
-          isAuthenticated()
-          && requestDocumentIdEqualsUserId()
-          && noMembers()
-          && 
-            ((isAnonymous() && ownerNameIsMissing())
-            || (isAuthenticated() && ownerNameIsValid() && ownerNameEqualsUserName()));
+    function emailMatchesUserToken(request) {
+        let tokenHasEmail = request.auth.token.keys().hasAny(['email']) &&
+            request.auth.token.email != null;
+        let dataHasEmail = request.resource.data.owner.keys().hasAny(['email']) &&
+            request.resource.data.owner.email != null;
+        let bothMissingEmail = !tokenHasEmail && !dataHasEmail;
+        return (bothMissingEmail ||
+            (request.resource.data.owner.email.address == request.auth.token.email &&
+                request.resource.data.owner.email.verified ==
+                    request.auth.token.email_verified));
+    }
+    function ownerNameMatchesUserToken(request) {
+        let tokenHasName = request.auth.token.keys().hasAny(['name']) &&
+            request.auth.token.name != null;
+        let dataHasName = request.resource.data.owner.keys().hasAny(['name']) &&
+            request.resource.data.owner.name != null;
+        let bothMissingName = !tokenHasName && !dataHasName;
+        return (bothMissingName ||
+            request.resource.data.owner.name == request.auth.token.name);
     }
 
-    match /listplayground/{doc} {
-      allow list: if true;
-      allow read: if false;
-    }
+      allow create: if (request.resource.data.id == request.auth.uid &&
+            stringsExactlyEqual(request.resource.data.version, '1') &&
+            request.resource.data.createdOn == request.time &&
+            request.resource.data.owner.uid == request.auth.uid &&
+            emailMatchesUserToken(request) &&
+            ownerNameMatchesUserToken(request));
 
-    match /public/{doc} {
-      allow read, write:if true;
+      allow read: if (resource.data.id == request.auth.uid ||
+            request.auth.token.memberOf == resource.id);
+
+      allow delete: if false;
+      
+      allow update: if (request.resource.data.id == request.auth.uid &&
+            stringsExactlyEqual(request.resource.data.version, '1') &&
+            request.resource.data.createdOn == resource.data.createdOn &&
+            request.resource.data.owner.uid == request.auth.uid &&
+            (!('owner' in request.resource.data.diff(resource.data).affectedKeys()) ||
+                ownerNameMatchesUserToken(request)) &&
+            (!('email' in request.resource.data.diff(resource.data).affectedKeys()) ||
+                emailMatchesUserToken(request)));
     }
   }
 }

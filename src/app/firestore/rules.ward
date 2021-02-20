@@ -1,0 +1,202 @@
+function isAuthenticated() {
+    return request.auth.uid != null;
+}
+
+function didChange(key, data, prev) {
+    return data.diff(prev).changedKeys().hasAny([key]);
+}
+
+function missingKey(key, data) {
+    return !(key in data);
+}
+
+function authUid() {
+    return request.auth.uid;
+}
+
+function authName() {
+    return request.auth.token.name;
+}
+
+function authEmail() {
+    return request.auth.token.email;
+}
+
+function authEmailVerified() {
+    return request.auth.token.email_verified;
+}
+
+type Email = { 
+    address: string, 
+    verified: bool
+}
+
+type UserToken = {
+    readonly uid: string,
+    name?: string,
+    email?: Email
+}
+
+type TokenEmail = {
+    address: string,
+    verified: bool
+
+    allow create:
+        if (data.address == authEmail())
+        && (data.verified == authEmailVerified());
+
+    allow update:
+        if (didChange("address") || didChange("verified"))
+            ? (data.address == authEmail() && data.verified == authEmailVerified())
+            : true; 
+}
+
+type Owner = {
+    readonly uid: string,
+    name?: string,
+    email?: TokenEmail
+
+    allow create: 
+        if (data.uid == authUid())
+        && (data.name == authName())
+        && (authEmail() == null 
+            ? missingKey("email", data)
+            : ((data.email.address == authEmail()) 
+                && (data.email.verified == authEmailVerified())
+
+    allow update:
+        if 
+            (!didChange("name", data, prev) || (data.name == authName()))
+}
+
+type Dates = {
+    readonly createdOn: timestamp,
+    modifiedOn: timestamp,
+
+    allow create:
+        if (data.createdOn == request.time)
+        && (data.modifiedOn == request.time);
+
+    allow update:
+        if data.modifiedOn == request.time;
+}
+
+function memberChangesByOwnerIsValid(data, prev) {
+    let diff = prev.diff(data);
+    let onlyRemovals = 
+        (diff.addedKeys().size() == 0)
+        && (diff.changedKeys().size() == 0);
+    return onlyRemovals;
+}
+
+function emailMatchesAuth(email) {
+    let addressMatches = request.auth.token.email == email.address;
+    let verifiedMatches = request.auth.token.email_verified == email.verified;
+    return addressMatches && verifiedMatches;     
+}
+
+function memberChangesByMemberIsValid(data, prev) {
+    let diff = prev.diff(data);
+    let noChanges = diff.affectedKeys().size() == 0;
+    let self = request.auth.uid;
+    let onlyAffectedSelf = diff.affectedKeys().hasOnly([ self ]);
+    let deletedSelf = diff.removedKeys().hasOnly([ self ]);
+    let changedSelf = diff.changedKeys().hasOnly([ self ]);
+    let propsMatchToken = 
+        (data[uid].name == request.auth.token.name)
+        && emailMatchesAuth(data[uid].email);
+    return 
+        noChanges
+        || (onlyAffectedSelf() && (deletedSelf || (changedSelf && emailMatchesAuth)));
+}
+
+function permitMemberChanges(data, prev) {
+    let diff = prev.diff(data);
+    let noChanges = diff.unchangedKeys().size() == data.size();
+    let onlyRemovals = 
+        (diff.addedKeys().size() == 0)
+        && (diff.changedKeys().size() == 0);
+    let onlyRemoveSelf = diff.removedKeys().hasOnly([uid]);
+    let onlyChangeSelf =
+        diff.changedKeys().hasOnly([uid])
+    return
+        (noChanges || onlyRemovals)
+        && (isOwner || onlyRemoveSelf);
+}
+
+type ShoppingList = {
+    readonly id: string,
+    version: '1',
+    dates: Dates,
+    owner: Owner,
+    members: map
+
+
+}
+
+// read - get and list
+// write - create update delete
+//    allow create: 
+//        if (members.size() == 0)
+//        && (request.auth.uid == owner.uid)
+//        && (request.auth.token.email == owner.email)
+//        && (request.auth.token.emailAddressValid)
+//        && (request.auth.token.name == data.owner.name);
+//
+//    allow create, update: 
+//        if (request.auth.uid == owner.uid)
+//        && (request.auth.token.email == owner.email)
+//        && (request.auth.token.emailAddressValid)
+//        && (request.auth.token.name == data.owner.name);
+//
+//    allow update: 
+//        if permitMemberChanges(
+//            request.auth.uid, 
+//            request.auth.uid == data.owner.uid,
+//            data, 
+//            prev);
+//
+//    allow delete: if (request.auth.uid == data.owner.uid);
+
+function isMember() {
+    return (request.auth.uid in data.member.keys());
+}
+
+function isOwner() {
+    return 
+        (request.auth.uid == data.id)
+        && (request.auth.uid == data.owner.uid);
+}
+
+function isOwnerOrMember() {
+    return isOwnerOrMember() || isMember();
+}
+
+function validateOwnerUpdate() {
+    let diff = data.diff(prev);
+    let changedOwner = diff.affectedKeys().hasAny(["owner"]);
+    let ownerDiff = data.owner.diff(prev.owner);
+    let changdOwnerName = ownerDiff.affectedKeys().hasAny(["name"]);
+    let changedOwnerEmail = ownerDiff.affectedKeys().hasAny(["email"]);
+    return 
+        !changedOwner 
+        || (!changdOwnerName || ownerNameMatchesAuth())        
+}
+
+// write : create, update, delete
+// read: get, list 
+
+match /lists/{listId} is ShoppingList  {
+    allow create:
+        if (resource.id == request.auth.uid)
+        && (resource.id == data.owner.uid)
+        && data.members.size() == 0;
+    allow read: 
+        if isOwnerOrMember();
+    allow delete: 
+        if isOwner();
+    allow update:
+        if isOwnerOrMember()
+        && validateOwnerUpdate()
+        && validateMembersUpdate();
+}
