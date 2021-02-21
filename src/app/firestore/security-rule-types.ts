@@ -168,6 +168,13 @@ export type ListFire<T> = {
   toSet: () => SetFire<T>;
 } & { readonly [index: number]: T };
 
+// BUGGY Don't have time to get into this right now. I've gotten a bit confused
+// here about whether the type T is the types of properties within the object or
+// the root object itself. Also not sure this type can be defined in any way
+// other than recursively. Look at relationship between this type and
+// ConvertDataModel defined below. Some work need to be done to ensure values()
+// returns just the correct types of values and keys() returns just the correct
+// types of keys.
 export interface MapFire<T extends object> {
   _kind: 'Map';
   keys: () => ListFire<StringFire>;
