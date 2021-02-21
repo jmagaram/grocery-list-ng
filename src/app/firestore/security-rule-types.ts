@@ -168,26 +168,23 @@ export type ListFire<T> = {
   toSet: () => SetFire<T>;
 } & { readonly [index: number]: T };
 
-// See the PropertyNames type which can be used with the get method to ensure
-// only valid property names are used. The get method could be augmented to
-// restrict the valid return types as well but I haven't implemented this yet.
-// Here's what the code might look like.
-//
-// type Point = { x: number; y: number }; type PointProperties =
-// PropertyNames<Point, 'deep'>; let map!: MapFire<string>; let result =
-// map.get<number, 'safe', PointProperties>(['x'], 1);
-export interface MapFire<T> {
+export interface MapFire<T extends object> {
   _kind: 'Map';
   keys: () => ListFire<StringFire>;
   size: () => number;
   values: () => ListFire<T>;
   diff: (other: MapFire<T>) => MapDiff;
-  get: <U, MODE extends 'safe' | 'unsafe' = 'unsafe', KEYS = string>(
-    key: MODE extends 'unsafe'
-      ? StringParameter | StringParameter[] | ListFire<StringParameter>
-      : KEYS | KEYS[],
+
+  // I'm not sure this is working properly. Should give a compile error if you
+  // use the wrong property names.
+  get: <U, MODE extends 'deep' | 'shallow' = 'shallow'>(
+    key: MODE extends 'shallow'
+      ? String | PropertyNames<T, 'shallow'>
+      : (String | PropertyNames<T, 'deep'>)[],
     defaultValue: U
-  ) => T | U;
+  ) => MODE extends 'shallow'
+    ? PropertyTypes<T, 'shallow'> | U
+    : PropertyTypes<T, 'deep'> | U;
 }
 
 export interface MapDiff {
@@ -341,7 +338,7 @@ export type ConvertDataModel<T> = T extends string
   : T extends Array<infer V>
   ? ListFire<ConvertDataModel<V>>
   : T extends { [K in keyof T]: infer V }
-  ? { readonly [K in keyof T]: ConvertDataModel<T[K]> } & MapFire<V>
+  ? { readonly [K in keyof T]: ConvertDataModel<T[K]> } & MapFire<T>
   : never;
 
 // Generates a type that encompasses all the valid property names for another type.
