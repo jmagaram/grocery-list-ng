@@ -175,12 +175,10 @@ export interface MapFire<T extends object> {
   values: () => ListFire<T>;
   diff: (other: MapFire<T>) => MapDiff;
 
-  // I'm not sure this is working properly. Should give a compile error if you
-  // use the wrong property names.
   get: <U, MODE extends 'deep' | 'shallow' = 'shallow'>(
     key: MODE extends 'shallow'
-      ? String | PropertyNames<T, 'shallow'>
-      : (String | PropertyNames<T, 'deep'>)[],
+      ? StringFire | PropertyNames<T, 'shallow'>
+      : (StringFire | PropertyNames<T, 'deep'>)[],
     defaultValue: U
   ) => MODE extends 'shallow'
     ? PropertyTypes<T, 'shallow'> | U
