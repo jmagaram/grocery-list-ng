@@ -174,7 +174,6 @@ export interface MapFire<T extends object> {
   size: () => number;
   values: () => ListFire<T>;
   diff: (other: MapFire<T>) => MapDiff;
-
   get: <U, MODE extends 'deep' | 'shallow' = 'shallow'>(
     key: MODE extends 'shallow'
       ? StringFire | PropertyNames<T, 'shallow'>
