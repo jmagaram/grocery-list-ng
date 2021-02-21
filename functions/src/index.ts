@@ -5,6 +5,15 @@ admin.initializeApp();
 
 type Message = { asTypedByUser: string; uppercased: string | null };
 
+export const createUser = functions.https.onRequest(async (req, response) => {
+  let userName: string = req.query.name as string;
+  functions.logger.info(`Try to create ${userName}`);
+  await admin.auth().createUser({
+    displayName: userName,
+  });
+  response.send('Success!');
+});
+
 export const helloWorld = functions.https.onRequest((request, response) => {
   functions.logger.info('Hello logs!', { structuredData: true });
   response.send('Hello from Firebase!');
