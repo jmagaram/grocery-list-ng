@@ -1,5 +1,5 @@
 {
-  "mochaExplorer.files": "firebase-tests/**/*.ts",
+  "mochaExplorer.files": ["firebase-tests/**/*.ts", "functions/tests/**/*.ts"],
   "mochaExplorer.require": ["ts-node/register"],
   "mochaExplorer.env": {
     "TS_NODE_COMPILER_OPTIONS": "{\"module\":\"commonjs\"}",
