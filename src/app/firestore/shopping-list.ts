@@ -1,4 +1,6 @@
-import { ShoppingList, Uid, FieldValue } from './data-types';
+import { ShoppingList, Uid, FieldValue, OpenInvitation } from './data-types';
+import { from } from 'fromfrom';
+import { range } from '../common/utilities';
 
 export function create(i: {
   userId: Uid;
@@ -24,4 +26,26 @@ export function create(i: {
     members: {},
   };
   return result;
+}
+
+export function createPassword() {
+  const randomCharacter = () => {
+    const characters = 'abcdefghjkmnpqrstuvwxyz23456789';
+    let index = Math.trunc((Math.random() * 1000) % characters.length);
+    return characters[index];
+  };
+  const randomString = (length: number) =>
+    from(range(1, length))
+      .map((_) => randomCharacter())
+      .reduce((s, total) => s + total, '');
+  return `${randomString(3)}-${randomString(4)}`;
+}
+
+export function createOpenInvitation(
+  serverTimestamp: FieldValue
+): OpenInvitation<'create'> {
+  return {
+    createdOn: serverTimestamp,
+    password: createPassword(),
+  };
 }

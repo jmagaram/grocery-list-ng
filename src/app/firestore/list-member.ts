@@ -1,4 +1,4 @@
-import { ListId, ListMember, UserToken, SERVER_TIMESTAMP } from './data-types';
+import { ListId, ListMember, UserToken } from './data-types';
 
 export function createListMember(
   listId: ListId,
@@ -6,7 +6,7 @@ export function createListMember(
 ): ListMember<'create'> {
   return {
     version: '1',
-    joinedOn: SERVER_TIMESTAMP,
+    joinedOn: 'a',
     listId: listId,
     user: member,
     id: JSON.stringify({ listId: listId, memberId: member.uid }),

@@ -1,9 +1,15 @@
 {
-  "mochaExplorer.files": ["firebase-tests/**/*.ts", "functions/tests/**/*.ts"],
+  "mochaExplorer.files": [
+    "firebase-tests/**/*.ts",
+    "src/app/firestore/*.ts",
+    "functions/tests/**/*.ts"
+  ],
   "mochaExplorer.require": ["ts-node/register"],
   "mochaExplorer.env": {
     "TS_NODE_COMPILER_OPTIONS": "{\"module\":\"commonjs\"}",
-    "FIRESTORE_EMULATOR_HOST": "localhost:8080"
+    "GOOGLE_APPLICATION_CREDENTIALS": "C:/Users/justi/source/repos/grocery-list-ng/functions/firebase-service-account-private-key.json"
+    // "GCLOUD_PROJECT": "grocery-list-ng-223b6"
+    // "FIRESTORE_EMULATOR_HOST": "localhost:8080",
   },
   "mochaExplorer.autoload": true
 }

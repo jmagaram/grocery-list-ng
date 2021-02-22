@@ -40,16 +40,18 @@ export type CollectionName = 'list' | 'animal' | 'member' | 'shoppinglist';
 
 export const shoppingListCollection: CollectionName = 'shoppinglist';
 
-export interface ShoppingList<M extends DocumentMode> {
+export interface OpenInvitation<M extends DocumentMode | 'invite'> {
+  createdOn: M extends 'invite' ? FieldValue : Date;
+  password: string;
+}
+
+export interface ShoppingList<M extends DocumentMode | 'invite'> {
   id: Uid;
   version: '1';
   createdOn: M extends 'create' ? FieldValue : Date;
   owner: UserToken;
   members: Record<string, UserToken>;
-  openInvitation?: {
-    createdOn: Date;
-    password: string;
-  };
+  openInvitation?: OpenInvitation<M>;
 }
 
 // community and discussion?

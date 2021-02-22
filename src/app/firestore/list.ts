@@ -1,9 +1,9 @@
-import { List, SERVER_TIMESTAMP, UserToken } from './data-types';
+import { List, UserToken } from './data-types';
 
 export function createList(owner: UserToken): List<'create'> {
   let result: List<'create'> = {
     version: '1',
-    createdOn: SERVER_TIMESTAMP,
+    createdOn: 'a',
     id: owner.uid,
     owner: {
       uid: owner.uid,
