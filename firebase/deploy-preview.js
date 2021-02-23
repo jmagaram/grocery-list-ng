@@ -1,6 +1,6 @@
 // Deploys current build to a preview channel in Firebase
 
-const { prompt } = require("inquirer");
+const inquirer = require("inquirer");
 const { execSync } = require("child_process");
 
 function exec(command) {
@@ -8,7 +8,7 @@ function exec(command) {
 }
 
 (async () => {
-  const build = await prompt([
+  const build = await inquirer.prompt([
     {
       type: "confirm",
       name: "value",
