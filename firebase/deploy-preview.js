@@ -1,6 +1,6 @@
 // Deploys current build to a preview channel in Firebase
 
-const inquirer = require("inquirer");
+const { prompt } = require("inquirer");
 const { execSync } = require("child_process");
 
 function exec(command) {
@@ -8,7 +8,7 @@ function exec(command) {
 }
 
 (async () => {
-  const build = await inquirer.prompt([
+  const build = await prompt([
     {
       type: "confirm",
       name: "value",
@@ -21,14 +21,14 @@ function exec(command) {
     exec("npm run-script prod");
   }
 
-  const deploy = await inquirer.prompt({
+  const deployHosting = await inquirer.prompt({
     type: "confirm",
     name: "value",
-    message: "Deploy a preview",
+    message: "Continue and deploy a web site preview",
     default: true,
   });
 
-  if (!deploy.value) {
+  if (!deployHosting.value) {
     return;
   }
 
@@ -37,21 +37,32 @@ function exec(command) {
       type: "input",
       name: "value",
       message: "Channel name",
-      initial: "preview",
+      default: "preview",
     },
   ]);
-
-  exec("firebase hosting:channel:deploy " + channel.value);
 
   const deployRules = await inquirer.prompt({
     type: "confirm",
     name: "value",
-    message: "Deploy security rules?",
+    message: "Deploy security rules too (affects live site)",
     default: true,
   });
 
+  const deployFunctions = await inquirer.prompt({
+    type: "confirm",
+    name: "value",
+    message: "Deploy functions too (affects live site)",
+    default: true,
+  });
+
+  exec("firebase hosting:channel:deploy " + channel.value);
+
+  if (deployFunctions.value) {
+    exec("firebase deploy --only functions");
+  }
+
   if (deployRules.value) {
-    exec("firebase deploy --only firestore:rules " + channel.value);
+    exec("firebase deploy --only firestore:rules");
   }
 
   // Don't think I need these lines but have a memory of having trouble running
