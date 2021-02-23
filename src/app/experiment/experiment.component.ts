@@ -37,7 +37,7 @@ export class ExperimentComponent implements OnInit {
           this.animalType.setValue('');
           this.animalColor.setValue('');
         })
-        .catch((error) => {
+        .catch((error:any) => {
           console.log('Error writing document: ', error);
         });
     }
