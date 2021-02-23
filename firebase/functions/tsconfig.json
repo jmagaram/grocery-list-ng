@@ -10,5 +10,5 @@
     "target": "es2017",
     "skipLibCheck": true // errors about ramda, jasmine, etc. https://tinyurl.com/ycpl2ovy
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
