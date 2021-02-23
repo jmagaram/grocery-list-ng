@@ -10,7 +10,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "prod": "npm ci && ng build --prod",
-    "preview": "node scripts/firebase/deploy-preview.js",
+    "preview": "node firebase/deploy-preview.js",
     "emulator": "firebase emulators:start"
   },
   "private": true,

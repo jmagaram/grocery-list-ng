@@ -43,6 +43,17 @@ function exec(command) {
 
   exec("firebase hosting:channel:deploy " + channel.value);
 
+  const deployRules = await inquirer.prompt({
+    type: "confirm",
+    name: "value",
+    message: "Deploy security rules?",
+    default: true,
+  });
+
+  if (deployRules.value) {
+    exec("firebase deploy --only firestore:rules " + channel.value);
+  }
+
   // Don't think I need these lines but have a memory of having trouble running
   // tools or building things without it.
   //
