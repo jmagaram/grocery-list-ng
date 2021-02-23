@@ -7,9 +7,7 @@ import {
   AnyRequestKind,
   CreateRule,
 } from './security-rule-types';
-import { GroceryListId, GroceryList } from './data-types';
-
-type ClaimsClient = { memberOf?: GroceryListId };
+import { GroceryList, Claims as ClaimsClient } from './data-types';
 
 type Claims = ConvertDataModel<ClaimsClient>;
 

@@ -1,5 +1,7 @@
 // From https://github.com/firebase/quickstart-testing/blob/master/unit-test-security-rules/test/firestore.spec.js
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import * as fs from 'fs';
 import * as http from 'http';
 import { pipe } from 'ramda';
@@ -13,13 +15,17 @@ import {
   firestore,
 } from '@firebase/rules-unit-testing';
 import { before, beforeEach, after, afterEach, describe, it } from 'mocha';
-import { FirebaseFirestore } from '@firebase/firestore-types';
+import {
+  CollectionReference,
+  DocumentData,
+  FirebaseFirestore,
+} from '@firebase/firestore-types';
 import {
   groceryListCollection,
   CollectionName,
   UserToken,
+  GroceryList,
 } from '../../src/app/firestore/data-types';
-import { assert } from 'chai';
 import { createGroceryList } from '../../src/app/firestore/data-functions';
 import * as firebase from 'firebase';
 
@@ -62,22 +68,27 @@ type Auth = {
   name?: string;
 };
 
-function toUserToken(auth: Auth): UserToken {
-  if (!auth.uid) throw 'No UID; valid scenario?';
-  let res: UserToken = { uid: auth.uid };
+const toUserToken = (auth: Auth): UserToken => {
+  if (!auth.uid) {
+    throw new Error('No UID; valid scenario?');
+  }
+  const res: UserToken = { uid: auth.uid };
   if (auth.name) {
-    res['name'] = auth.name;
+    res.name = auth.name;
   }
   if (auth.email) {
-    if (!auth.email_verified)
-      throw 'The email was provided but verification was not; valid scenario?';
-    res['email'] = {
+    if (!auth.email_verified) {
+      throw new Error(
+        'The email was provided but verification was not; valid scenario?'
+      );
+    }
+    res.email = {
       address: auth.email,
       verified: auth.email_verified,
     };
   }
   return res;
-}
+};
 
 const ME: Auth = {
   uid: 'me_id',
@@ -111,17 +122,16 @@ const ANONYMOUS_TOKEN = toUserToken(ANONYMOUS);
 
 type TestResult = 'pass' | 'fail';
 
-function userApp(auth: Auth | undefined) {
-  return initializeTestApp({ projectId: PROJECT_ID, auth }).firestore();
-}
+const userApp = (auth: Auth | undefined): FirebaseFirestore =>
+  initializeTestApp({ projectId: PROJECT_ID, auth }).firestore();
 
-function adminApp() {
-  return initializeAdminApp({ projectId: PROJECT_ID }).firestore();
-}
+const adminApp = (): FirebaseFirestore =>
+  initializeAdminApp({ projectId: PROJECT_ID }).firestore();
 
-function getCollection(fb: FirebaseFirestore, c: CollectionName) {
-  return fb.collection(c);
-}
+const getCollection = (
+  fb: FirebaseFirestore,
+  c: CollectionName
+): CollectionReference<DocumentData> => fb.collection(c);
 
 describe('security rules : list', () => {
   describe('create', () => {
@@ -132,15 +142,16 @@ describe('security rules : list', () => {
       expectation: TestResult;
     }
 
-    function createGroceryListFromToken(token: UserToken) {
-      return createGroceryList({
+    const createGroceryListFromToken = (
+      token: UserToken
+    ): GroceryList<'create'> =>
+      createGroceryList({
         userId: token.uid,
         displayName: token.name,
         emailAddress: token.email?.address,
-        emailVerified: token.email == undefined ? false : token.email.verified,
+        emailVerified: token.email === undefined ? false : token.email.verified,
         serverTimestamp: firestore.FieldValue.serverTimestamp(),
       });
-    }
 
     const tests: TestData[] = [
       {
@@ -158,7 +169,7 @@ describe('security rules : list', () => {
     ];
 
     tests.forEach((t) => {
-      it(`${t.comment}`, async function () {
+      it(`${t.comment}`, async () => {
         const doc = pipe(
           () => userApp(t.user),
           (i) => getCollection(i, groceryListCollection),

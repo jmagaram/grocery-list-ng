@@ -4,7 +4,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { createGroceryList } from '../../../src/app/firestore/data-functions';
+import { createGroceryList as makeGroceryList } from '../../../src/app/firestore/data-functions';
 import { groceryListCollection } from '../../../src/app/firestore/data-types';
 
 admin.initializeApp();
@@ -14,10 +14,20 @@ function configureFirestore(f: FirebaseFirestore.Firestore) {
   return f;
 }
 
-export const createShoppingList = functions.auth
+export const deleteGroceryListOnUserDelete = functions.auth
+  .user()
+  .onDelete(async (user) => {
+    await admin
+      .firestore()
+      .collection(groceryListCollection)
+      .doc(user.uid)
+      .delete();
+  });
+
+export const createGroceryListOnUserCreate = functions.auth
   .user()
   .onCreate(async (user) => {
-    let shoppingList = createGroceryList({
+    let shoppingList = makeGroceryList({
       userId: user.uid,
       displayName: user.displayName,
       emailAddress: user.email,

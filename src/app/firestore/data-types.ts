@@ -9,6 +9,10 @@ export type CollectionName = 'animal' | 'grocerylist';
 export const groceryListCollection: CollectionName = 'grocerylist';
 export const animalCollection: CollectionName = 'animal';
 
+export interface Claims {
+  memberOf?: GroceryListId;
+}
+
 export interface Animal {
   type: string;
   color: string;
