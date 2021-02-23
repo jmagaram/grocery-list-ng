@@ -2,17 +2,17 @@ import { describe, it, before } from 'mocha';
 import * as test from 'firebase-functions-test';
 import { assert } from 'chai';
 import * as admin from 'firebase-admin';
-import { createShoppingList } from '../src/index';
+import { createShoppingList } from '../src';
 import {
   // eslint-disable-next-line no-unused-vars
-  ShoppingList,
-  shoppingListCollection,
-} from '../../src/app/firestore/data-types';
+  GroceryList,
+  groceryListCollection,
+} from '../../../src/app/firestore/data-types';
 
 // Maybe type this in console before running tests and starting the emulator but
 // it seems to work from the Mocha explorer when setting the environment
 // variables in settings.
-// GOOGLE_APPLICATION_CREDENTIALS=/Users/justi/source/repos/grocery-list-ng/functions/firebase-service-account-private-key.json
+// GOOGLE_APPLICATION_CREDENTIALS=/Users/justi/source/repos/grocery-list-ng/firebase/functions/service-account-private-key.json
 
 describe('firebase functions', () => {
   before(() => {});
@@ -28,11 +28,11 @@ describe('firebase functions', () => {
       await wrapped(user);
       let doc = await admin
         .firestore()
-        .collection(shoppingListCollection)
+        .collection(groceryListCollection)
         .doc(uid)
         .get();
       assert.isTrue(doc.exists);
-      let sl = doc.data() as ShoppingList<'read'>;
+      let sl = doc.data() as GroceryList<'read'>;
       assert.strictEqual(sl.owner.uid, uid);
       assert.strictEqual(sl.owner.name, user.displayName);
       assert.strictEqual(sl.owner.email?.address, user.email);
@@ -41,7 +41,7 @@ describe('firebase functions', () => {
     } finally {
       await admin
         .firestore()
-        .collection(shoppingListCollection)
+        .collection(groceryListCollection)
         .doc(uid)
         .delete();
       t.cleanup();

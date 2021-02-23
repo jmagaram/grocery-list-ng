@@ -1,16 +1,14 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
+    "strict": true,
     "module": "commonjs",
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
     "outDir": "lib",
     "sourceMap": true,
-    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
     "target": "es2017",
     "skipLibCheck": true // errors about ramda, jasmine, etc. https://tinyurl.com/ycpl2ovy
   },
-  "compileOnSave": true,
-  "include": [
-    "src"  
-  ]
+  "include": ["src"]
 }

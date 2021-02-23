@@ -1,28 +1,21 @@
+/* eslint-disable prefer-const */
+
 import {
   ConvertDataModel,
   Request,
   Resource,
   AnyRequestKind,
   CreateRule,
-  StringFire,
-  StringParameter,
 } from './security-rule-types';
-import { List, ListId } from './data-types';
+import { GroceryListId, GroceryList } from './data-types';
 
-type ClaimsClient = { memberOf?: ListId };
+type ClaimsClient = { memberOf?: GroceryListId };
 
 type Claims = ConvertDataModel<ClaimsClient>;
 
-function isLoggedIn(request: Request<any, Claims, AnyRequestKind>) {
-  return request.auth.uid != null;
-}
-
-function stringsExactlyEqual(a: StringParameter, b: StringParameter) {
-  return ((a as unknown) as string) == ((b as unknown) as string);
-}
-
-namespace ListA {
-  type Model = ConvertDataModel<List<'read'>>;
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace ShoppingListRules {
+  type Model = ConvertDataModel<GroceryList<'read'>>;
 
   type RequestList<Kind extends AnyRequestKind> = Request<Model, Claims, Kind>;
 
@@ -34,71 +27,54 @@ namespace ListA {
 
   declare const resource: ResourceList;
 
-  function emailMatchesUserToken(request: WriteRequestList) {
-    let tokenHasEmail =
-      request.auth.token.keys().hasAny(['email']) &&
-      request.auth.token.email != null;
-    let dataHasEmail =
-      request.resource.data.owner.keys().hasAny(['email']) &&
-      request.resource.data.owner.email != null;
-    let bothMissingEmail = !tokenHasEmail && !dataHasEmail;
-    return (
-      bothMissingEmail ||
-      (request.resource.data.owner.email!.address == request.auth.token.email &&
-        request.resource.data.owner.email!.verified ==
-          request.auth.token.email_verified)
-    );
-  }
-
-  function ownerNameMatchesUserToken(request: WriteRequestList) {
-    let tokenHasName =
-      request.auth.token.keys().hasAny(['name']) &&
-      request.auth.token.name != null;
-    let dataHasName =
-      request.resource.data.owner.keys().hasAny(['name']) &&
-      request.resource.data.owner.name != null;
-    let bothMissingName = !tokenHasName && !dataHasName;
-    return (
-      bothMissingName ||
-      request.resource.data.owner.name == request.auth.token.name
-    );
-  }
-
+  // eslint-disable-next-line no-shadow
   const READ: CreateRule<Model, Claims> = (request, resource) => {
-    return (
-      resource.data.id == request.auth.uid ||
-      request.auth.token.memberOf == resource.id
-    );
+    let isOwner = request.auth.uid === resource.data.id;
+    let isMember = request.auth.token.memberOf === resource.id;
+    return isOwner || isMember;
   };
 
-  // don't understand how nulls vs missing fields are treated
+  // TODO: Fix the auth to be a proper Map that validates field names.
+  // TODO: Fix get function type in general; not working
+  // TODO: Check invitation
+  // TODO: Find out of optional token fields, like name, are null or missing.
+  // eslint-disable-next-line no-shadow
   const CREATE: CreateRule<Model, Claims> = (request, resource) => {
+    let doc = request.resource.data;
+    let auth = request.auth;
+    let isOwner = request.auth.uid === doc.id;
+    let isVersion1 = ((doc.version as unknown) as string) === '1';
+    let createdNow = doc.createdOn === request.time;
+    let ownerIdMatches = doc.owner.uid === request.auth.uid;
+    let ownerNameMatches =
+      (doc as any).get(['owner', 'name'], -1) ===
+      (auth.token as any).get('name', -1);
+    let ownerEmailAddressMatches =
+      (doc as any).get(['owner', 'email', 'address'], -1) ===
+      (auth.token as any).get('email', -1);
+    let ownerEmailVerifiedMatches =
+      (doc as any).get(['owner', 'email', 'verified'], -1) ===
+      (auth.token as any).get('email_verified', -1);
+    let membersEmpty = doc.members.size() === 0;
     return (
-      request.resource.data.id == request.auth.uid &&
-      stringsExactlyEqual(request.resource.data.version, '1') &&
-      request.resource.data.createdOn == request.time &&
-      request.resource.data.owner.uid == request.auth.uid &&
-      emailMatchesUserToken(request) &&
-      ownerNameMatchesUserToken(request)
+      isOwner &&
+      isVersion1 &&
+      createdNow &&
+      ownerIdMatches &&
+      ownerNameMatches &&
+      ownerEmailAddressMatches &&
+      ownerEmailVerifiedMatches &&
+      membersEmpty
     );
   };
 
-  const UPDATE: CreateRule<Model, Claims> = (request, resource) => {
-    return (
-      request.resource.data.id == request.auth.uid &&
-      stringsExactlyEqual(request.resource.data.version, '1') &&
-      request.resource.data.createdOn == resource.data.createdOn &&
-      request.resource.data.owner.uid == request.auth.uid &&
-      (!('owner' in request.resource.data.diff(resource.data).affectedKeys()) ||
-        ownerNameMatchesUserToken(request)) &&
-      (!('email' in request.resource.data.diff(resource.data).affectedKeys()) ||
-        emailMatchesUserToken(request))
-    );
-  };
+  // Allow through cloud function or another approach
+  // eslint-disable-next-line no-shadow
+  const UPDATE: CreateRule<Model, Claims> = (request, resource) => false;
 
-  const DELETE: CreateRule<Model, Claims> = (request, resource) => {
-    return false;
-  };
+  // Allow through cloud function or another approach
+  // eslint-disable-next-line no-shadow
+  const DELETE: CreateRule<Model, Claims> = (request, resource) => false;
 }
 
 export {};

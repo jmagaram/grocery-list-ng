@@ -1,17 +1,17 @@
-import { createPassword } from './shopping-list';
+import { createPassword } from './data-functions';
 import { assert } from 'chai';
 
 describe('password', () => {
   it('password length is 8 like a phone number', () => {
-    let p = createPassword();
+    const p = createPassword();
     assert.equal(p.length, 8);
     assert.equal(p[3], '-');
   });
 
   it('passwords are different', () => {
-    let a = createPassword();
-    let b = createPassword();
-    let c = createPassword();
+    const a = createPassword();
+    const b = createPassword();
+    const c = createPassword();
     assert.notEqual(a, b);
     assert.notEqual(b, c);
     assert.notEqual(a, c);
@@ -45,10 +45,10 @@ describe('password', () => {
     assertDoesNotInclude('L');
   });
 
-  function assertDoesNotInclude(s: string) {
+  const assertDoesNotInclude = (s: string) => {
     for (let i = 0; i < 100; i++) {
-      let password = createPassword();
+      const password = createPassword();
       assert.isNotTrue(password.includes(s));
     }
-  }
+  };
 });

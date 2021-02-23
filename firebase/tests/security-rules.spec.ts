@@ -8,7 +8,6 @@ import {
   initializeAdminApp,
   clearFirestoreData,
   loadFirestoreRules,
-  apps,
   assertFails,
   assertSucceeds,
   firestore,
@@ -16,13 +15,12 @@ import {
 import { before, beforeEach, after, afterEach, describe, it } from 'mocha';
 import { FirebaseFirestore } from '@firebase/firestore-types';
 import {
+  groceryListCollection,
   CollectionName,
-  List,
-  Email,
   UserToken,
-} from '../src/app/firestore/data-types';
+} from '../../src/app/firestore/data-types';
 import { assert } from 'chai';
-import { createList } from '../src/app/firestore/list';
+import { createGroceryList } from '../../src/app/firestore/data-functions';
 import * as firebase from 'firebase';
 
 const PROJECT_ID = 'firestore-emulator-tests-project';
@@ -134,17 +132,27 @@ describe('security rules : list', () => {
       expectation: TestResult;
     }
 
+    function createGroceryListFromToken(token: UserToken) {
+      return createGroceryList({
+        userId: token.uid,
+        displayName: token.name,
+        emailAddress: token.email?.address,
+        emailVerified: token.email == undefined ? false : token.email.verified,
+        serverTimestamp: firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
     const tests: TestData[] = [
       {
         comment: 'id : allow if id == user id',
         user: ME,
-        doc: createList(ME_TOKEN),
+        doc: createGroceryListFromToken(ME_TOKEN),
         expectation: 'pass',
       },
       {
         comment: 'id : deny if id != user id',
         user: ME,
-        doc: createList(SOMEONE_ELSE_TOKEN),
+        doc: createGroceryListFromToken(SOMEONE_ELSE_TOKEN),
         expectation: 'fail',
       },
     ];
@@ -153,7 +161,7 @@ describe('security rules : list', () => {
       it(`${t.comment}`, async function () {
         const doc = pipe(
           () => userApp(t.user),
-          (i) => getCollection(i, 'list'),
+          (i) => getCollection(i, groceryListCollection),
           (i) => i.doc(t.doc.id)
         )();
         switch (t.expectation) {

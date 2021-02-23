@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Animal, ExperimentComponent } from './experiment.component';
+import { ExperimentComponent } from './experiment.component';
 import { appConfig } from '../app.module';
+import { Animal, animalCollection } from '../firestore/data-types';
 
 describe('ExperimentComponent', () => {
   let component: ExperimentComponent;
@@ -23,7 +24,7 @@ describe('ExperimentComponent', () => {
 
   it('can add data', async () => {
     await component.fs
-      .collection<Animal>('animals')
+      .collection<Animal>(animalCollection)
       .doc()
       .set({ type: 'gorillaf', color: 'brown' + Date.now().toString() });
     expect(true).toBeTrue();

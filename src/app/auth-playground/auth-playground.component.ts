@@ -9,11 +9,11 @@ import { Observable } from 'rxjs';
   styleUrls: ['./auth-playground.component.scss'],
 })
 export class AuthPlaygroundComponent implements OnInit {
+  user$: Observable<firebase.User | null>;
+
   constructor(public auth: AngularFireAuth) {
     this.user$ = auth.user;
   }
-
-  user$: Observable<firebase.User | null>;
 
   ngOnInit(): void {}
   login() {

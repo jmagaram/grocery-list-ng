@@ -2,13 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
-
-export interface Animal {
-  type: string;
-  color: string;
-}
-
-const animalCollection = 'animal';
+import { Animal, animalCollection } from '../firestore/data-types';
 
 @Component({
   selector: 'app-experiment',
@@ -16,36 +10,30 @@ const animalCollection = 'animal';
   styleUrls: ['./experiment.component.scss'],
 })
 export class ExperimentComponent implements OnInit {
-  constructor(fs: AngularFirestore) {
-    this.fs = fs;
-    this.animals$ = fs.collection<Animal>(animalCollection).valueChanges();
-    // this.animals$ = fs
-    //   .collection<Animal>(animalCollection, (ref) =>
-    //     ref.where('color', '==', 'white')
-    //   )
-    //   .valueChanges();
-  }
-
   fs: AngularFirestore;
   animalType = new FormControl('');
   animalColor = new FormControl('');
   animals$: Observable<Animal[]>;
 
+  constructor(fs: AngularFirestore) {
+    this.fs = fs;
+    this.animals$ = fs.collection<Animal>(animalCollection).valueChanges();
+  }
+
   ngOnInit(): void {}
 
   onCreateAnimal(): void {
-    if (this.animalType.value != '' && this.animalColor.value != '') {
-      let collection = this.fs.collection<Animal>(animalCollection);
-      let type = this.animalType.value as string;
-      let color = this.animalColor.value as string;
-      let animal: Animal = {
-        type: type,
-        color: color,
+    if (this.animalType.value !== '' && this.animalColor.value !== '') {
+      const collection = this.fs.collection<Animal>(animalCollection);
+      const type = this.animalType.value as string;
+      const color = this.animalColor.value as string;
+      const animal: Animal = {
+        type,
+        color,
       };
       collection
         .add(animal)
         .then(() => {
-          console.log('Wrote it!');
           this.animalType.setValue('');
           this.animalColor.setValue('');
         })

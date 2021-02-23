@@ -5,12 +5,13 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build and watch": "tsc -w",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "prod": "npm ci && ng build --prod",
-    "preview": "node scripts/preview.js",
-    "emulator": "node scripts/start-firebase-emulator.js"
+    "preview": "node scripts/firebase/deploy-preview.js",
+    "emulator": "firebase emulators:start"
   },
   "private": true,
   "dependencies": {
@@ -68,6 +69,17 @@
     "ramda": "^0.27.1",
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
-    "typescript": "^4.1.5"
+    "typescript": "^4.1.5",
+    "eslint": "^7.6.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jsdoc": "30.7.6",
+    "eslint-plugin-prefer-arrow": "1.2.2",
+    "@angular-eslint/builder": "1.2.0",
+    "@angular-eslint/eslint-plugin": "1.2.0",
+    "@angular-eslint/eslint-plugin-template": "1.2.0",
+    "@angular-eslint/schematics": "1.2.0",
+    "@angular-eslint/template-parser": "1.2.0",
+    "@typescript-eslint/eslint-plugin": "4.3.0",
+    "@typescript-eslint/parser": "4.3.0"
   }
 }

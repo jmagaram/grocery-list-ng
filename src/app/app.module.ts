@@ -49,7 +49,7 @@ const emulatorProviders: Provider[] = environment.useEmulators
 
 const providers = [emulatorProviders];
 
-export const appConfig = { imports: imports, providers: providers };
+export const appConfig = { imports, providers };
 
 @NgModule({
   declarations: [AppComponent, ExperimentComponent, AuthPlaygroundComponent],

@@ -4,8 +4,8 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import * as ShoppingListModule from '../../src/app/firestore/shopping-list';
-import { shoppingListCollection } from '../../src/app/firestore/data-types';
+import { createGroceryList } from '../../../src/app/firestore/data-functions';
+import { groceryListCollection } from '../../../src/app/firestore/data-types';
 
 admin.initializeApp();
 
@@ -17,7 +17,7 @@ function configureFirestore(f: FirebaseFirestore.Firestore) {
 export const createShoppingList = functions.auth
   .user()
   .onCreate(async (user) => {
-    let shoppingList = ShoppingListModule.create({
+    let shoppingList = createGroceryList({
       userId: user.uid,
       displayName: user.displayName,
       emailAddress: user.email,
@@ -25,7 +25,7 @@ export const createShoppingList = functions.auth
       serverTimestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
     await configureFirestore(admin.firestore())
-      .collection(shoppingListCollection)
+      .collection(groceryListCollection)
       .doc(user.uid)
       .create(shoppingList);
   });

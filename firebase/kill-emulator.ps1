@@ -15,7 +15,9 @@ function killProcessByPort($port) {
     }
 }
 
-killProcessByPort(9099);
-killProcessByPort(5001);
-killProcessByPort(8080);
-killProcessByPort(5000);
+$ports = 9099, 5001, 8080, 5000
+foreach ($port in $ports)
+{
+  killProcessByPort($port);
+  write-host "Killed port ${port}"
+}

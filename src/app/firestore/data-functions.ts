@@ -1,15 +1,15 @@
-import { ShoppingList, Uid, FieldValue, OpenInvitation } from './data-types';
 import { from } from 'fromfrom';
 import { range } from '../common/utilities';
+import { FieldValue, GroceryList, Uid } from './data-types';
 
-export function create(i: {
+export const createGroceryList = (i: {
   userId: Uid;
   displayName?: string;
   emailAddress?: string;
   emailVerified: boolean;
   serverTimestamp: FieldValue;
-}): ShoppingList<'create'> {
-  let result: ShoppingList<'create'> = {
+}): GroceryList<'create'> => {
+  const result: GroceryList<'create'> = {
     version: '1',
     id: i.userId,
     owner: {
@@ -26,12 +26,12 @@ export function create(i: {
     members: {},
   };
   return result;
-}
+};
 
-export function createPassword() {
+export const createPassword = () => {
   const randomCharacter = () => {
     const characters = 'abcdefghjkmnpqrstuvwxyz23456789';
-    let index = Math.trunc((Math.random() * 1000) % characters.length);
+    const index = Math.trunc((Math.random() * 1000) % characters.length);
     return characters[index];
   };
   const randomString = (length: number) =>
@@ -39,13 +39,11 @@ export function createPassword() {
       .map((_) => randomCharacter())
       .reduce((s, total) => s + total, '');
   return `${randomString(3)}-${randomString(4)}`;
-}
+};
 
-export function createOpenInvitation(
-  serverTimestamp: FieldValue
-): OpenInvitation<'create'> {
-  return {
-    createdOn: serverTimestamp,
-    password: createPassword(),
-  };
-}
+// const createGroceryListOpenInvitation = (
+//   serverTimestamp: FieldValue
+// ): OpenInvitation<'create'> => ({
+//   createdOn: serverTimestamp,
+//   password: createPassword(),
+// });

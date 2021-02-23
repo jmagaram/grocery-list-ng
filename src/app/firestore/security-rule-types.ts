@@ -33,87 +33,20 @@
 // an unsafe cast like "X as unknown as number"; this is erased when transpiled
 // to javascript. Do not use the ?. operator; use the !. operator instead.
 //
-// ISSUES WITH THIS APPROACH: Optional chaining isn't supported. So this makes
-// navigating your models using standard TypeScript, like model?.member?.email,
-// really cumbersome. Instead you need to write these types of expressions using
-// the get operator, which isn't type-safe, and defeats a lot of the benefit.
-// ===========================================================================
-
-// ===========================================================================
-// This is a super-simple example of how to use this. You can copy and paste
-// this entire file into the TypeScript playground to see the end result.
-// https://www.typescriptlang.org/play
-// ===========================================================================
-
-namespace SimpleExample {
-  type UserId = string;
-
-  type Post = {
-    id: string;
-    createdOn: Date;
-    modifiedOn: Date;
-    owner: UserId;
-    comment: string;
-  };
-
-  type Claims = {
-    isAdministrator: boolean;
-  };
-
-  type PostModel = ConvertDataModel<Post>;
-
-  type PostRequest<Kind = AnyRequestKind> = Request<
-    PostModel,
-    Claims,
-    AnyRequestKind
-  >;
-
-  type PostResource = Resource<PostModel>;
-
-  declare const request: PostRequest;
-
-  declare const resource: PostResource;
-
-  function isLoggedIn() {
-    return request.auth.uid != null;
-  }
-
-  function isAdministrator() {
-    return request.auth.token.isAdministrator == true;
-  }
-
-  function commentIsValid(s: StringFire) {
-    return s.trim().size() != 0;
-  }
-
-  function hasAllRequiredKeys(data: PostModel) {
-    let requiredKeys = ['createdOn', 'modifiedOn', 'comment'];
-    return (
-      data.keys().hasAll(requiredKeys) && data.keys().hasOnly(requiredKeys)
-    );
-  }
-
-  const CREATE: CreateRule<PostModel, Claims> = (request, resource) =>
-    isLoggedIn() &&
-    hasAllRequiredKeys(request.resource.data) &&
-    resource.data.createdOn == request.time &&
-    resource.data.modifiedOn == request.time &&
-    resource.data.owner == request.auth.uid &&
-    commentIsValid(resource.data.comment);
-
-  const READ: ReadRule<PostModel, Claims> = (request, resource) => isLoggedIn();
-
-  const DELETE: DeleteRule<PostModel, Claims> = (request, resource) =>
-    isAdministrator() || resource.data.owner == request.auth.uid;
-
-  const UPDATE: UpdateRule<PostModel, Claims> = (request, resource) =>
-    resource.data.modifiedOn == request.time &&
-    resource.data.createdOn == request.resource!.data.createdOn && // read only
-    resource.data.owner == request.resource!.data.owner && // read only
-    hasAllRequiredKeys(request.resource.data) &&
-    commentIsValid(resource.data.comment);
-}
-
+// ISSUES WITH THIS APPROACH:
+//
+// Optional chaining isn't supported. So this makes navigating your models using
+// standard TypeScript, like model?.member?.email, really cumbersome. Instead
+// you need to write these types of expressions using the get operator, which
+// isn't type-safe, and defeats a lot of the benefit.
+//
+// The types defined on the server have completely unusable names; intellisense
+// doesn't make them readable because they are much too long. This is because
+// the types are generated automatically as a mapping of the friendly
+// client-type rules.
+//
+// Don't yet know how to make a literal StringFire; useful to verify the version
+// number of a document is "1" for example.
 // ===========================================================================
 
 export interface Timestamp {
@@ -141,7 +74,7 @@ export type StringParameter = StringLiteral | StringFire;
 
 export interface StringFire {
   _kind: 'String';
-  matches: (pattern: StringParameter) => Boolean;
+  matches: (pattern: StringParameter) => boolean;
   lower: () => StringFire;
   upper: () => StringFire;
   trim: () => StringFire;
@@ -175,7 +108,7 @@ export type ListFire<T> = {
 // ConvertDataModel defined below. Some work need to be done to ensure values()
 // returns just the correct types of values and keys() returns just the correct
 // types of keys.
-export interface MapFire<T extends object> {
+export interface MapFire<T extends Record<string, unknown>> {
   _kind: 'Map';
   keys: () => ListFire<StringFire>;
   size: () => number;
@@ -224,6 +157,7 @@ export declare function get<DATA>(path: string): Resource<DATA> | undefined;
 
 export declare function exists(path: string): boolean;
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace math {
   function abs(n: number): number;
   function ceil(n: number): number;
@@ -235,6 +169,7 @@ export declare namespace math {
   function pow(base: number, exponent: number): boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace timestamp {
   function date(year: number, month: number, day: number): Timestamp;
   function value(epochMillis: number): Timestamp;
@@ -262,12 +197,14 @@ export interface Auth<CLAIMS> {
 export interface Token {
   name?: StringFire;
   email?: StringFire;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   email_verified: boolean;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   firebase: { sign_in_provider: SignInProvider };
 }
 
 export interface Request<DATA, CLAIMS, METHOD extends AnyRequestKind> {
-  auth: Auth<CLAIMS>;
+  auth: Auth<CLAIMS>; // Map?
   resource: { data: METHOD extends WriteRequest ? DATA : undefined };
   method: METHOD;
   time: Timestamp;
@@ -324,6 +261,8 @@ export type UtilityFunction<
   item?: T
 ) => boolean;
 
+type AnyFunc = (...args: any[]) => any;
+
 // Takes a TypeScript data model defined for the client and converts it to a
 // model that uses rules-engine specific types. For example, it converts every
 // instance of an {...} object into a Map with methods for diff, size, etc... If
@@ -337,7 +276,7 @@ export type ConvertDataModel<T> = T extends string
   ? number
   : T extends boolean
   ? boolean
-  : T extends Function
+  : T extends AnyFunc
   ? never
   : T extends Array<infer V>
   ? ListFire<ConvertDataModel<V>>
@@ -345,20 +284,37 @@ export type ConvertDataModel<T> = T extends string
   ? { readonly [K in keyof T]: ConvertDataModel<T[K]> } & MapFire<T>
   : never;
 
-// Generates a type that encompasses all the valid property names for another type.
-type PropertyNames<T extends object, M extends 'deep' | 'shallow'> = {
-  [TKey in keyof T & (string | number)]: T[TKey] extends Function
+// Given an object { } - not an array, function, or primitive - generates a type
+// that encompasses the valid property names within that type, excluding
+// properties that refer to methods.
+type PropertyNames<
+  T extends Record<string, unknown>,
+  M extends 'deep' | 'shallow'
+> = {
+  [KEY in keyof T & (string | number)]: T[KEY] extends Record<string, unknown>
+    ? KEY | (M extends 'deep' ? PropertyNames<T[KEY], M> : never)
+    : T[KEY] extends AnyFunc
     ? never
-    : T[TKey] extends object
-    ? TKey | (M extends 'deep' ? PropertyNames<T[TKey], M> : never)
-    : TKey;
+    : KEY;
 }[keyof T & (string | number)];
 
-// Generates a type that encompasses all the valid property values for another type.
-type PropertyTypes<T extends object, M extends 'deep' | 'shallow'> = {
-  [TKey in keyof T & (string | number)]: T[TKey] extends Function
-    ? never
-    : T[TKey] extends object
-    ? T[TKey] | (M extends 'deep' ? PropertyTypes<T[TKey], M> : never)
-    : T[TKey];
+type PropertyTypesCore<
+  T extends Record<string, unknown>,
+  MODE extends 'deep' | 'shallow'
+> = {
+  [KEY in keyof T & (string | number)]:
+    | T[KEY]
+    | (MODE extends 'deep'
+        ? T[KEY] extends Record<string, unknown>
+          ? PropertyTypesCore<T[KEY], 'deep'>
+          : never
+        : never);
 }[keyof T & (string | number)];
+
+// Given an object { } - not an array, function, or primitive - generates a type
+// that encompasses the types of all properties within that type, excluding
+// properties that refer to functions.
+type PropertyTypes<
+  T extends Record<string, unknown>,
+  MODE extends 'deep' | 'shallow'
+> = Exclude<PropertyTypesCore<T, MODE>, AnyFunc>;
