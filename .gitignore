@@ -53,4 +53,4 @@ firestore-debug.log
 firebase-debug.log
 firebase-emulator-data
 firestore-coverage.html
-firebase/functions/service-account-private-key.json
+firebase/service-account-private-key.json
