@@ -7,7 +7,10 @@ import {
   AnyRequestKind,
   CreateRule,
 } from './security-rule-types';
-import { GroceryList, Claims as ClaimsClient } from './data-types';
+import {
+  GroceryList,
+  Claims as ClaimsClient,
+} from '../../src/app/firestore/data-types';
 
 type Claims = ConvertDataModel<ClaimsClient>;
 
