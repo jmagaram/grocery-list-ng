@@ -3,9 +3,9 @@
   "mochaExplorer.require": ["ts-node/register"],
   "mochaExplorer.env": {
     "TS_NODE_COMPILER_OPTIONS": "{\"module\":\"commonjs\"}",
-    "GOOGLE_APPLICATION_CREDENTIALS": "C:/Users/justi/source/repos/grocery-list-ng/firebase/functions/service-account-private-key.json"
-    // "GCLOUD_PROJECT": "grocery-list-ng-223b6"
-    // "FIRESTORE_EMULATOR_HOST": "localhost:8080",
+    "GOOGLE_APPLICATION_CREDENTIALS": "C:/Users/justi/source/repos/grocery-list-ng/firebase/service-account-private-key.json",
+    "FIRESTORE_EMULATOR_HOST": "localhost:8080",
+    "GCLOUD_PROJECT": "grocery-list-ng-223b6"
   },
   "mochaExplorer.autoload": true
 }
