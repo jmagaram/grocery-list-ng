@@ -42,8 +42,3 @@ export interface OpenInvitation<M extends DocumentMode | 'invite'> {
   createdOn: M extends 'invite' ? FieldValue : Date;
   password: string;
 }
-
-export interface Post<MODE extends 'create' | 'read'> {
-  comment: string;
-  createdOn: MODE extends 'create' ? FieldValue : Date;
-}
