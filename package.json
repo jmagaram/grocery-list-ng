@@ -11,6 +11,7 @@
     "e2e": "ng e2e",
     "prod": "npm ci && ng build --prod",
     "preview": "node firebase/deploy-preview.js",
+    "deploy": "ts-node -P tsconfig.build-scripts.json firebase/deploy.ts",
     "emulator": "firebase emulators:start"
   },
   "private": true,
