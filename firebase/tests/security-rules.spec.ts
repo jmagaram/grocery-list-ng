@@ -27,18 +27,11 @@ import {
   GroceryList,
 } from '../../src/app/firestore/data-types';
 import { createGroceryList } from '../../src/app/firestore/data-functions';
-import * as firebase from 'firebase';
 
 const PROJECT_ID = 'firestore-emulator-tests-project';
 
 beforeEach(async () => {
   await clearFirestoreData({ projectId: PROJECT_ID });
-});
-
-before(async () => {
-  // Necessary? The emulator seems to load rules automatically.
-  const rules = fs.readFileSync('./firestore.rules', 'utf8');
-  await loadFirestoreRules({ projectId: PROJECT_ID, rules });
 });
 
 after(async () => {
