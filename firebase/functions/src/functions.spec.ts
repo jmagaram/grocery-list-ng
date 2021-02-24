@@ -10,7 +10,7 @@ import { createGroceryList } from '../../../src/app/firestore/data-functions';
 import {
   createGroceryListOnUserCreate,
   deleteGroceryListOnUserDelete,
-} from './index';
+} from './functions';
 
 // Maybe type this in console before running tests and starting the emulator but
 // it seems to work from the Mocha explorer when setting the environment
