@@ -1,56 +1,60 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
- 
-    match /animal/{animalId} {
-        allow read: if true;
-        allow write: if true;
-    }
-
-    match /grocerylist/{listId} {
-
-        function canCreate(request) {
-            let doc = request.resource.data;
-            let auth = request.auth;
-            let isOwner = request.auth.uid == doc.id;
-            let isVersion1 = doc.version == '1';
-            let createdNow = doc.createdOn == request.time;
-            let ownerIdMatches = doc.owner.uid == request.auth.uid;
-            let ownerNameMatches = doc.get(['owner', 'name'], -1) ==
-                auth.token.get('name', -1);
-            let ownerEmailAddressMatches = doc.get(['owner', 'email', 'address'], -1) ==
-                auth.token.get('email', -1);
-            let ownerEmailVerifiedMatches = doc.get(['owner', 'email', 'verified'], -1) ==
-                auth.token.get('email_verified', -1);
-            let membersEmpty = doc.members.size() == 0;
-            return (isOwner &&
-                isVersion1 &&
-                createdNow &&
-                ownerIdMatches &&
-                ownerNameMatches &&
-                ownerEmailAddressMatches &&
-                ownerEmailVerifiedMatches &&
-                membersEmpty);
-        }
-
-        function canRead(request, resource) {
-            let isOwner = request.auth.uid == resource.data.id;
-            let isMember = request.auth.token.memberOf == resource.id;
-            return isOwner || isMember;
-        }
-
-        function canDelete() {
-            return false;
-        }
-
-        function canUpdate() {
-            return false;
-        }
-
-        allow create: if canCreate(request);
-        allow read: if canRead(request, resource);
-        allow delete: if canDelete();
-        allow update: if canUpdate();
-    }
-  }
+match /databases/{database}/documents {
+match /animal/{animalId} {
+    allow read: if true; 
+    allow write: if true; 
 }
+match /grocerylist/{grocerylistid} {
+    function readIfHelper (request, resource) {
+        let isOwner = request.auth.uid == resource.data.id;
+        let isMember = request.auth.token.memberOf == resource.id;
+        return isOwner || isMember;
+    }
+    // TODO: Fix the auth to be a proper Map that validates field names.
+    // TODO: Fix get function type in general; not working
+    // TODO: Check invitation
+    // TODO: Find out of optional token fields, like name, are null or missing.
+    function createIfHelper (request, resource) {
+        let doc = request.resource.data;
+        let auth = request.auth;
+        let isOwner = request.auth.uid == doc.id;
+        let isVersion1 = doc.version == '1';
+        let createdNow = doc.createdOn == request.time;
+        let ownerIdMatches = doc.owner.uid == request.auth.uid;
+        let ownerNameMatches = doc.get(['owner', 'name'], -1) ==
+            auth.token.get('name', -1);
+        let ownerEmailAddressMatches = doc.get(['owner', 'email', 'address'], -1) ==
+            auth.token.get('email', -1);
+        let ownerEmailVerifiedMatches = doc.get(['owner', 'email', 'verified'], -1) ==
+            auth.token.get('email_verified', -1);
+        let membersEmpty = doc.members.size() == 0;
+        return (isOwner &&
+            isVersion1 &&
+            createdNow &&
+            ownerIdMatches &&
+            ownerNameMatches &&
+            ownerEmailAddressMatches &&
+            ownerEmailVerifiedMatches &&
+            membersEmpty);
+    }
+    allow create: if createIfHelper(request, resource);
+    allow read: if readIfHelper(request, resource);
+    // Allow through cloud function or another approach
+    allow update: if false; 
+    // Allow through cloud function or another approach
+    allow delete: if false; 
+}
+match /invitation/{invitationId}/ {
+    function isPasswordValid (p) { return p.matches('^\\w{3,}$'); }
+    allow create: if request.resource.data.version == '1' &&
+            request.resource.data.groceryListId == request.auth.uid &&
+            isPasswordValid(request.resource.data.password) &&
+            request.resource.data.createdOn == request.time;
+    allow update: if request.resource.data.version == '1' &&
+            request.resource.data.groceryListId == request.auth.uid &&
+            isPasswordValid(request.resource.data.password);
+    allow delete: if resource.data.groceryListId == request.auth.uid;
+    allow read: if resource.data.groceryListId == request.auth.uid;
+}
+}}

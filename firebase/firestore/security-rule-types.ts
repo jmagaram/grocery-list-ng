@@ -204,8 +204,8 @@ export interface Token {
 }
 
 export interface Request<DATA, CLAIMS, METHOD extends AnyRequestKind> {
-  auth: Auth<CLAIMS>; // Map?
-  resource: { data: METHOD extends WriteRequest ? DATA : undefined };
+  auth: Auth<CLAIMS>;
+  resource: METHOD extends 'delete' ? undefined : { data: DATA };
   method: METHOD;
   time: Timestamp;
 }
@@ -245,6 +245,11 @@ export type UpdateRule<DATA, CLAIMS> = (
   resource: Resource<DATA>
 ) => boolean;
 
+export type CreateUpdateRule<DATA, CLAIMS> = (
+  request: Request<DATA, CLAIMS, 'create' | 'update'>,
+  resource: Resource<DATA>
+) => boolean;
+
 export type DeleteRule<DATA, CLAIMS> = (
   request: Request<DATA, CLAIMS, 'delete'>,
   resource: Resource<DATA>
@@ -254,7 +259,7 @@ export type UtilityFunction<
   DATA,
   CLAIMS,
   T = undefined,
-  METHOD = AnyRequestKind
+  METHOD extends AnyRequestKind = AnyRequestKind
 > = (
   request: Request<DATA, CLAIMS, AnyRequestKind>,
   resource: Resource<DATA>,

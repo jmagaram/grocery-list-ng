@@ -5,7 +5,7 @@ export type DocumentMode = 'read' | 'create' | 'update' | 'merge';
 
 export type FieldValue = any;
 
-export type CollectionName = 'animal' | 'grocerylist';
+export type CollectionName = 'animal' | 'grocerylist' | 'invitation';
 export const groceryListCollection: CollectionName = 'grocerylist';
 export const animalCollection: CollectionName = 'animal';
 
@@ -29,16 +29,27 @@ export interface UserToken {
   email?: Email;
 }
 
-export interface GroceryList<M extends DocumentMode | 'invite'> {
+export interface GroceryList<M extends DocumentMode> {
   id: Uid;
   version: '1';
-  createdOn: M extends 'create' ? FieldValue : Date;
+  createdOn: FieldValue | Date;
   owner: UserToken;
   members: Record<string, UserToken>;
   openInvitation?: OpenInvitation<M>;
 }
 
-export interface OpenInvitation<M extends DocumentMode | 'invite'> {
-  createdOn: M extends 'invite' ? FieldValue : Date;
+export interface OpenInvitation<M extends DocumentMode> {
+  readonly id: M extends 'create' ? undefined : string;
+  readonly version: '1';
+  readonly groceryListId: GroceryListId;
+  readonly createdOn: M extends 'read' ? Date : FieldValue | Date;
+  readonly password: string;
+}
+
+export interface Invitation<M extends DocumentMode> {
+  readonly id: M extends 'create' ? undefined : string;
+  readonly version: '1';
+  readonly groceryListId: GroceryListId;
+  createdOn: M extends 'read' ? Date : FieldValue | Date;
   password: string;
 }

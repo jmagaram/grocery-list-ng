@@ -7,6 +7,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-namespace */
 
 import {
   AnyRequestKind,
@@ -48,43 +49,48 @@ declare const request: PostRequest;
 
 declare const resource: PostResource;
 
-function isLoggedIn() {
-  return request.auth.uid !== null;
+// MATCH /sample/{docid}
+namespace Sample {
+  function isLoggedIn() {
+    return request.auth.uid !== null;
+  }
+
+  function isAdministrator() {
+    return request.auth.token.isAdministrator === true;
+  }
+
+  function commentIsValid(s: StringFire) {
+    return s.trim().size() !== 0;
+  }
+
+  function hasAllRequiredKeys(data: PostModel) {
+    let requiredKeys = ['createdOn', 'modifiedOn', 'comment'];
+    return (
+      data.keys().hasAll(requiredKeys) && data.keys().hasOnly(requiredKeys)
+    );
+  }
+
+  // eslint-disable-next-line no-shadow
+  const create: CreateRule<PostModel, Claims> = (request, resource) =>
+    isLoggedIn() &&
+    hasAllRequiredKeys(request.resource.data) &&
+    resource.data.createdOn === request.time &&
+    resource.data.modifiedOn === request.time &&
+    resource.data.owner === request.auth.uid &&
+    commentIsValid(resource.data.comment);
+
+  // eslint-disable-next-line no-shadow
+  const read: ReadRule<PostModel, Claims> = (request, resource) => isLoggedIn();
+
+  // eslint-disable-next-line no-shadow
+  const deleteIf: DeleteRule<PostModel, Claims> = (request, resource) =>
+    isAdministrator() || resource.data.owner === request.auth.uid;
+
+  // eslint-disable-next-line no-shadow
+  const update: UpdateRule<PostModel, Claims> = (request, resource) =>
+    resource.data.modifiedOn === request.time &&
+    resource.data.createdOn === request.resource!.data.createdOn && // read only
+    resource.data.owner === request.resource!.data.owner && // read only
+    hasAllRequiredKeys(request.resource.data) &&
+    commentIsValid(resource.data.comment);
 }
-
-function isAdministrator() {
-  return request.auth.token.isAdministrator === true;
-}
-
-function commentIsValid(s: StringFire) {
-  return s.trim().size() !== 0;
-}
-
-function hasAllRequiredKeys(data: PostModel) {
-  let requiredKeys = ['createdOn', 'modifiedOn', 'comment'];
-  return data.keys().hasAll(requiredKeys) && data.keys().hasOnly(requiredKeys);
-}
-
-// eslint-disable-next-line no-shadow
-const CREATE: CreateRule<PostModel, Claims> = (request, resource) =>
-  isLoggedIn() &&
-  hasAllRequiredKeys(request.resource.data) &&
-  resource.data.createdOn === request.time &&
-  resource.data.modifiedOn === request.time &&
-  resource.data.owner === request.auth.uid &&
-  commentIsValid(resource.data.comment);
-
-// eslint-disable-next-line no-shadow
-const READ: ReadRule<PostModel, Claims> = (request, resource) => isLoggedIn();
-
-// eslint-disable-next-line no-shadow
-const DELETE: DeleteRule<PostModel, Claims> = (request, resource) =>
-  isAdministrator() || resource.data.owner === request.auth.uid;
-
-// eslint-disable-next-line no-shadow
-const UPDATE: UpdateRule<PostModel, Claims> = (request, resource) =>
-  resource.data.modifiedOn === request.time &&
-  resource.data.createdOn === request.resource!.data.createdOn && // read only
-  resource.data.owner === request.resource!.data.owner && // read only
-  hasAllRequiredKeys(request.resource.data) &&
-  commentIsValid(resource.data.comment);

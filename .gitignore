@@ -53,3 +53,10 @@ firestore-debug.log
 firebase-debug.log
 firebase-emulator-data
 firestore-coverage.html
+firebase/firestore/lib/firebase/firestore/security-rule-types.js
+firebase/firestore/lib/firebase/firestore/security-rule-types.js.map
+firebase/firestore/lib/firebase/firestore/security-rules.js
+firebase/firestore/lib/firebase/firestore/security-rules.js.map
+firebase/firestore/lib/src/app/firestore/data-types.js
+firebase/firestore/lib/src/app/firestore/data-types.js.map
+firebase/firestore/generated.rules

@@ -1,0 +1,16 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "strict": true,
+    "module": "CommonJS",
+    "outDir": "lib",
+    "sourceMap": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "target": "ES5",
+    "lib": ["ES6"],
+    "skipLibCheck": true,
+    "removeComments": false
+  },
+  "files": ["security-rules.ts"]
+}
