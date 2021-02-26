@@ -292,20 +292,15 @@ export type ConvertDataModel<T> = T extends string
 // Given an object { } - not an array, function, or primitive - generates a type
 // that encompasses the valid property names within that type, excluding
 // properties that refer to methods. This doesn't seem to work with interfaces.
-type PropertyNames<
-  T extends Record<string, unknown>,
-  MODE extends 'deep' | 'shallow'
-> = {
-  [KEY in keyof T & (string | number)]: T[KEY] extends AnyFunc
-    ? never
-    :
-        | KEY
-        | (MODE extends 'deep'
-            ? T[KEY] extends Record<string, unknown>
-              ? PropertyNames<T[KEY], 'deep'>
-              : never
-            : never);
-}[keyof T & (string | number)];
+// Code from https://tinyurl.com/y7rz357h
+// eslint-disable-next-line @typescript-eslint/ban-types
+type PropertyNames<T, M extends 'deep' | 'shallow'> = T extends object
+  ? {
+      [K in keyof T]-?:
+        | (T[K] extends AnyFunc ? never : K)
+        | (M extends 'deep' ? PropertyNames<T[K], 'deep'> : never);
+    }[keyof T]
+  : never;
 
 type PropertyTypesCore<
   T extends Record<string, unknown>,
