@@ -291,16 +291,20 @@ export type ConvertDataModel<T> = T extends string
 
 // Given an object { } - not an array, function, or primitive - generates a type
 // that encompasses the valid property names within that type, excluding
-// properties that refer to methods.
+// properties that refer to methods. This doesn't seem to work with interfaces.
 type PropertyNames<
   T extends Record<string, unknown>,
-  M extends 'deep' | 'shallow'
+  MODE extends 'deep' | 'shallow'
 > = {
-  [KEY in keyof T & (string | number)]: T[KEY] extends Record<string, unknown>
-    ? KEY | (M extends 'deep' ? PropertyNames<T[KEY], M> : never)
-    : T[KEY] extends AnyFunc
+  [KEY in keyof T & (string | number)]: T[KEY] extends AnyFunc
     ? never
-    : KEY;
+    :
+        | KEY
+        | (MODE extends 'deep'
+            ? T[KEY] extends Record<string, unknown>
+              ? PropertyNames<T[KEY], 'deep'>
+              : never
+            : never);
 }[keyof T & (string | number)];
 
 type PropertyTypesCore<
