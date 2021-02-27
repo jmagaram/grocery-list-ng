@@ -1,7 +1,7 @@
 // Converts the compiled rules to a format that can be imported into Firebase
 // First run tsc in the folder using the special tsconfig
 // Then run this script
-// Can do this via npx ts-node -P ../../tsconfig.build-scripts.json morph.ts
+// Can do this via npx ts-node -P ../../tsconfig.build-scripts.json transpile-rules.ts
 //
 // Any line in the source with OMIT is excluded
 // Use namespaces in the source for each match path
@@ -10,8 +10,9 @@
 /* eslint-disable max-len */
 import { readFileSync, writeFileSync } from 'fs';
 
-const fileName = './lib/firebase/firestore/security-rules.js';
-const content = readFileSync(fileName, 'utf8');
+const inputFile = './lib/firebase/firestore/security-rules.js';
+const outputFile = 'firestore.rules';
+const content = readFileSync(inputFile, 'utf8');
 
 let result = content
   .replace(
@@ -29,6 +30,7 @@ let result = content
   .replace(/^"use.*/gm, '') // use strict
   .replace(/^\s*\/\* eslint.*/gm, '') // eslint
   .replace(/^\s*\/\/ eslint.*/gm, '')
+  .replace(/var.*(?=require\(").*/gm, '') // require imports
   .replace(/===/, '==')
   .replace(/!==/, '!=')
   .replace(/(?<space>^\s*)var/gm, '$<space>let') // var to let
@@ -42,4 +44,4 @@ match /databases/{database}/documents {
     ${result}
 }}`.replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, ''); // blank lines
 
-writeFileSync('generated.rules', result);
+writeFileSync(outputFile, result);
