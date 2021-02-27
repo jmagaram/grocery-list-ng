@@ -20,6 +20,9 @@
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
+        "no-trailing-spaces": "off",
+        "@typescript-eslint/quotes": "off",
+        "prefer-const": "warn",
         "@angular-eslint/component-selector": [
           "error",
           {
@@ -43,7 +46,8 @@
       "extends": ["plugin:@angular-eslint/template/recommended"],
       "rules": {
         "quotes": "off",
-        "no-trailing-spaces": "warn"
+        "no-trailing-spaces": "warn",
+        "@typescript-eslint/type-annotation-spacing": "warn"
       }
     }
   ]
