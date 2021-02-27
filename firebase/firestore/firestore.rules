@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
 match /databases/{database}/documents {
-match /animal/{animalId} {
+    match /animal/{animalId} {
     allow read: if true; 
     allow write: if true; 
 }
@@ -11,10 +11,7 @@ match /grocerylist/{grocerylistid} {
         let isMember = request.auth.token.memberOf == resource.data.id;
         return isOwner || isMember;
     }
-    // TODO: Fix the auth to be a proper Map that validates field names.
-    // TODO: Fix get function type in general; not working
     // TODO: Check invitation
-    // TODO: Find out of optional token fields, like name, are null or missing.
     function createIfHelper (request, resource) {
         let doc = request.resource.data;
         let auth = request.auth;
@@ -22,12 +19,11 @@ match /grocerylist/{grocerylistid} {
         let isVersion1 = doc.version == '1';
         let createdNow = doc.createdOn == request.time;
         let ownerIdMatches = doc.owner.uid == request.auth.uid;
-        let ownerNameMatches = doc.get(['owner', 'name'], -1) ==
-            auth.token.get('name', -1);
-        let ownerEmailAddressMatches = doc.get(['owner', 'email', 'address'], -1) ==
-            auth.token.get('email', -1);
-        let ownerEmailVerifiedMatches = doc.get(['owner', 'email', 'verified'], -1) ==
-            auth.token.get('email_verified', -1);
+        let ownerNameMatches = doc.get(["token", "name"], -1);
+        let ownerEmailAddressMatches = doc.get(["token", "email"], -1);
+        let ownerEmailVerifiedMatches = 
+        doc.get(["owner", "email", "verified"], -1) ==
+            auth.get(["token", "email_verified"], -1);
         let membersEmpty = doc.members.size() == 0;
         return (isOwner &&
             isVersion1 &&

@@ -61,14 +61,13 @@ namespace ShoppingListRules {
     let createdNow = doc.createdOn == request.time;
     let ownerIdMatches = doc.owner.uid == request.auth.uid;
     let ownerNameMatches =
-      (doc as any).get(['owner', 'name'], -1) ==
-      (auth.token as any).get('name', -1);
+      doc.get(-1, (i) => i.owner.name) == auth.get(-1, (i) => i.token.name);
     let ownerEmailAddressMatches =
-      (doc as any).get(['owner', 'email', 'address'], -1) ==
-      (auth.token as any).get('email', -1);
+      doc.get(-1, (i) => i.owner.email) == auth.get(-1, (i) => i.token.email);
     let ownerEmailVerifiedMatches =
-      (doc as any).get(['owner', 'email', 'verified'], -1) ==
-      (auth.token as any).get('email_verified', -1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      doc.get(-1, (i) => i.owner.email!.verified) ==
+      auth.get(-1, (i) => i.token.email_verified);
     let membersEmpty = doc.members.size() == 0;
     return (
       isOwner &&
