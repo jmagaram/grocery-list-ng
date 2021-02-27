@@ -1,5 +1,4 @@
 /* eslint-disable no-var */
-/* eslint-disable eqeqeq */
 /* eslint-disable arrow-body-style */
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable @typescript-eslint/no-namespace */
@@ -46,8 +45,8 @@ namespace ShoppingListRules {
   type ResourceList = Resource<Model>;
 
   const readIfHelper: ReadRule<Model, Claims> = (request, resource) => {
-    let isOwner = request.auth.uid == resource.data.id;
-    let isMember = request.auth.token.memberOf == resource.data.id;
+    let isOwner = request.auth.uid === resource.data.id;
+    let isMember = request.auth.token.memberOf === resource.data.id;
     return isOwner || isMember;
   };
 
@@ -56,19 +55,19 @@ namespace ShoppingListRules {
   const createIfHelper: CreateRule<Model, Claims> = (request, resource) => {
     let doc = request.resource.data;
     let auth = request.auth;
-    let isOwner = request.auth.uid == doc.id;
-    let isVersion1 = ((doc.version as unknown) as string) == '1';
-    let createdNow = doc.createdOn == request.time;
-    let ownerIdMatches = doc.owner.uid == request.auth.uid;
+    let isOwner = request.auth.uid === doc.id;
+    let isVersion1 = ((doc.version as unknown) as string) === '1';
+    let createdNow = doc.createdOn === request.time;
+    let ownerIdMatches = doc.owner.uid === request.auth.uid;
     let ownerNameMatches =
-      doc.get(-1, (i) => i.owner.name) == auth.get(-1, (i) => i.token.name);
+      doc.get(-1, (i) => i.owner.name) === auth.get(-1, (i) => i.token.name);
     let ownerEmailAddressMatches =
-      doc.get(-1, (i) => i.owner.email) == auth.get(-1, (i) => i.token.email);
+      doc.get(-1, (i) => i.owner.email) === auth.get(-1, (i) => i.token.email);
     let ownerEmailVerifiedMatches =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      doc.get(-1, (i) => i.owner.email!.verified) ==
+      doc.get(-1, (i) => i.owner.email!.verified) ===
       auth.get(-1, (i) => i.token.email_verified);
-    let membersEmpty = doc.members.size() == 0;
+    let membersEmpty = doc.members.size() === 0;
     return (
       isOwner &&
       isVersion1 &&
@@ -109,8 +108,8 @@ namespace Invitation {
   ) => {
     return (
       // TODO Fails when fields are missing; use type-safe Get method instead
-      request.auth.token.email == request.resource.data.owner.email &&
-      request.auth.token.email_verified ==
+      request.auth.token.email === request.resource.data.owner.email &&
+      request.auth.token.email_verified ===
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         request.resource.data.owner.email!.verified
     );
@@ -127,12 +126,12 @@ namespace Invitation {
   };
 
   const update: UpdateRule<Model, Claims> = (request, resource) =>
-    ((request.resource.data.version as unknown) as string) == '1' &&
+    ((request.resource.data.version as unknown) as string) === '1' &&
     isPasswordValid(request.resource.data.password) &&
     emailMatchesAuth(request, resource);
 
   const deleteIf: DeleteRule<Model, Claims> = (request, resource) =>
-    resource.data.id == request.auth.uid;
+    resource.data.id === request.auth.uid;
 
   const read: ReadRule<Model, Claims> = (request, resource) =>
     !isExpired(request, resource);
