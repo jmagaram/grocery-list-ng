@@ -8,11 +8,7 @@ import { createGroceryList as makeGroceryList } from '../../../src/app/firestore
 import { groceryListCollection } from '../../../src/app/firestore/data-types';
 
 admin.initializeApp();
-
-function configureFirestore(f: FirebaseFirestore.Firestore) {
-  f.settings({ ignoreUndefinedProperties: true });
-  return f;
-}
+admin.firestore().settings({ ignoreUndefinedProperties: true });
 
 export const deleteGroceryListOnUserDelete = functions.auth
   .user()
@@ -34,7 +30,8 @@ export const createGroceryListOnUserCreate = functions.auth
       emailVerified: user.emailVerified,
       serverTimestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
-    await configureFirestore(admin.firestore())
+    await admin
+      .firestore()
       .collection(groceryListCollection)
       .doc(user.uid)
       .create(shoppingList);
