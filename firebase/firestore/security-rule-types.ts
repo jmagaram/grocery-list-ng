@@ -142,7 +142,7 @@ export type MapFire<T> = T extends string
       size: () => number;
       diff: (other: MapFire<T>) => MapDiff;
       values: () => ListFire<any>; // Don't know how to strongly-type this
-      get: <X, U>(otherwise: X, path: (start: T) => U) => U | X; // TODO Transpile this
+      get: <X, U>(otherwise: X, path: (start: T) => U) => U | X;
     }
   : never;
 
