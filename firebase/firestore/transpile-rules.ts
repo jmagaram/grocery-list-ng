@@ -47,8 +47,8 @@ let result = content
   .replace(/^\s*\/\* eslint.*/gm, '') // eslint
   .replace(/^\s*\/\/ eslint.*/gm, '')
   .replace(/var.*(?=require\(").*/gm, '') // require imports
-  .replace(/===/, '==')
-  .replace(/!==/, '!=')
+  .replace(/===/gm, '==')
+  .replace(/!==/gm, '!=')
   .replace(/(?<space>^\s*)var/gm, '$<space>let') // var to let
   .replace(/^Object.defineProperty.*/gm, '')
   .replace(/^\/\/# sourceMapping.*/gm, '')
