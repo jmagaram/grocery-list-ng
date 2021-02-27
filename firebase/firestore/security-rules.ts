@@ -1,4 +1,3 @@
-/* eslint-disable no-var */
 /* eslint-disable arrow-body-style */
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable @typescript-eslint/no-namespace */
@@ -52,7 +51,7 @@ namespace ShoppingListRules {
 
   // TODO: Check invitation
   // eslint-disable-next-line no-shadow
-  const createIfHelper: CreateRule<Model, Claims> = (request, resource) => {
+  const createIfHelper: CreateRule<Model, Claims, 'request'> = (request) => {
     let doc = request.resource.data;
     let auth = request.auth;
     let isOwner = request.auth.uid === doc.id;
@@ -80,19 +79,19 @@ namespace ShoppingListRules {
     );
   };
 
-  const create: CreateRule<Model, Claims> = (request, resource) =>
-    createIfHelper(request, resource);
+  const create: CreateRule<Model, Claims, 'request'> = (request) =>
+    createIfHelper(request);
 
   const read: ReadRule<Model, Claims> = (request, resource) =>
     readIfHelper(request, resource);
 
   // Allow through cloud function or another approach
   // eslint-disable-next-line no-shadow
-  const update: UpdateRule<Model, Claims> = (request, resource) => false;
+  const update: UpdateRule<Model, Claims, 'noparams'> = () => false;
 
   // Allow through cloud function or another approach
   // eslint-disable-next-line no-shadow
-  const deleteIf: DeleteRule<Model, Claims> = (request, resource) => false;
+  const deleteIf: DeleteRule<Model, Claims, 'noparams'> = () => false;
 }
 
 // MATCH /invitation/{invitationId}
@@ -102,9 +101,8 @@ namespace Invitation {
   const isPasswordValid = (p: StringFire): boolean =>
     (p as StringFireMethods).matches('^\\w{3,}$');
 
-  const emailMatchesAuth: CreateUpdateRule<Model, Claims> = (
-    request,
-    resource
+  const emailMatchesAuth: CreateUpdateRule<Model, Claims, 'request'> = (
+    request
   ) => {
     return (
       // TODO Fails when fields are missing; use type-safe Get method instead
@@ -128,7 +126,7 @@ namespace Invitation {
   const update: UpdateRule<Model, Claims> = (request, resource) =>
     ((request.resource.data.version as unknown) as string) === '1' &&
     isPasswordValid(request.resource.data.password) &&
-    emailMatchesAuth(request, resource);
+    emailMatchesAuth(request);
 
   const deleteIf: DeleteRule<Model, Claims> = (request, resource) =>
     resource.data.id === request.auth.uid;

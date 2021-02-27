@@ -79,7 +79,7 @@ namespace Sample {
     commentIsValid(resource.data.comment);
 
   // eslint-disable-next-line no-shadow
-  const read: ReadRule<PostModel, Claims> = (request, resource) => isLoggedIn();
+  const read: ReadRule<PostModel, Claims, 'noparams'> = () => isLoggedIn();
 
   // eslint-disable-next-line no-shadow
   const deleteIf: DeleteRule<PostModel, Claims> = (request, resource) =>

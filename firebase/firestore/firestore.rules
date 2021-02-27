@@ -12,7 +12,7 @@ match /grocerylist/{grocerylistid} {
         return isOwner || isMember;
     }
     // TODO: Check invitation
-    function createIfHelper (request, resource) {
+    function createIfHelper (request) {
         let doc = request.resource.data;
         let auth = request.auth;
         let isOwner = request.auth.uid == doc.id;
@@ -34,7 +34,7 @@ match /grocerylist/{grocerylistid} {
             ownerEmailVerifiedMatches &&
             membersEmpty);
     }
-    allow create: if createIfHelper(request, resource);
+    allow create: if createIfHelper(request);
     allow read: if readIfHelper(request, resource);
     // Allow through cloud function or another approach
     allow update: if false; 
@@ -45,7 +45,7 @@ match /invitation/{invitationId} {
     function isPasswordValid (p) {
         return p.matches('^\\w{3,}$');
     }
-    function emailMatchesAuth (request, resource) {
+    function emailMatchesAuth (request) {
         return (
         // TODO Fails when fields are missing; use type-safe Get method instead
         request.auth.token.email == request.resource.data.owner.email &&
@@ -63,7 +63,7 @@ match /invitation/{invitationId} {
     }
     allow update: if request.resource.data.version == '1' &&
             isPasswordValid(request.resource.data.password) &&
-            emailMatchesAuth(request, resource);
+            emailMatchesAuth(request);
     allow delete: if resource.data.id == request.auth.uid;
     allow read: if !isExpired(request, resource);
 }

@@ -249,45 +249,76 @@ export interface Resource<DATA> {
   id: string;
 }
 
-export type ReadRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, ReadRequest>,
-  resource: Resource<DATA>
-) => boolean;
+type PARAMS = 'request' | 'resource' | 'both' | 'noparams';
 
-export type ListRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, 'list'>,
-  resource: Resource<DATA>
-) => boolean;
+type UtilityFunction<
+  DATA,
+  CLAIMS,
+  METHOD extends AnyRequestKind,
+  P extends PARAMS
+> = P extends 'both'
+  ? (
+      request: Request<DATA, CLAIMS, METHOD>,
+      resource: Resource<DATA>
+    ) => boolean
+  : P extends 'request'
+  ? (request: Request<DATA, CLAIMS, METHOD>) => boolean
+  : P extends 'resource'
+  ? (resource: Resource<DATA>) => boolean
+  : P extends 'noparams'
+  ? () => boolean
+  : never;
 
-export type GetRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, 'get'>,
-  resource: Resource<DATA>
-) => boolean;
+export type ReadRule<DATA, CLAIMS, P extends PARAMS = 'both'> = UtilityFunction<
+  DATA,
+  CLAIMS,
+  ReadRequest,
+  P
+>;
 
-export type WriteRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, WriteRequest>,
-  resource: Resource<DATA>
-) => boolean;
+export type ListRule<DATA, CLAIMS, P extends PARAMS = 'both'> = UtilityFunction<
+  DATA,
+  CLAIMS,
+  'list',
+  P
+>;
 
-export type CreateRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, 'create'>,
-  resource: Resource<DATA>
-) => boolean;
+export type GetRule<DATA, CLAIMS, P extends PARAMS = 'both'> = UtilityFunction<
+  DATA,
+  CLAIMS,
+  'get',
+  P
+>;
 
-export type UpdateRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, 'update'>,
-  resource: Resource<DATA>
-) => boolean;
+export type WriteRule<
+  DATA,
+  CLAIMS,
+  P extends PARAMS = 'both'
+> = UtilityFunction<DATA, CLAIMS, WriteRequest, P>;
 
-export type CreateUpdateRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, 'create' | 'update'>,
-  resource: Resource<DATA>
-) => boolean;
+export type CreateRule<
+  DATA,
+  CLAIMS,
+  P extends PARAMS = 'both'
+> = UtilityFunction<DATA, CLAIMS, 'create', P>;
 
-export type DeleteRule<DATA, CLAIMS> = (
-  request: Request<DATA, CLAIMS, 'delete'>,
-  resource: Resource<DATA>
-) => boolean;
+export type UpdateRule<
+  DATA,
+  CLAIMS,
+  P extends PARAMS = 'both'
+> = UtilityFunction<DATA, CLAIMS, 'update', P>;
+
+export type CreateUpdateRule<
+  DATA,
+  CLAIMS,
+  P extends PARAMS = 'both'
+> = UtilityFunction<DATA, CLAIMS, 'create' | 'update', P>;
+
+export type DeleteRule<
+  DATA,
+  CLAIMS,
+  P extends PARAMS = 'both'
+> = UtilityFunction<DATA, CLAIMS, 'delete', P>;
 
 type AnyFunction = (...args: any[]) => any;
 
