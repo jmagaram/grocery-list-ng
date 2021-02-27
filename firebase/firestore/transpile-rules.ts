@@ -41,8 +41,8 @@ let result = content
     'function $<fname> $<args> $<body>'
   )
   .replace(/^\s*var (\S+);(\r|\n)\s*\(function.*$/gm, '') // namespace start
-  .replace(/(?<space>^\s*})(?<moduleend>\)\(.*$)/gm, '$<space>') //namespace end
-  .replace(/\/\/ MATCH (?<path>\S*).*$/gm, 'match $<path> {') // match path comments
+  .replace(/(?<space>^\s*})(?<moduleend>\)\(.*$)/gm, `$<space>`) //namespace end
+  .replace(/\/\/ MATCH (?<path>\S*).*$/gm, `match $<path> {`) // match path comments
   .replace(/^"use.*/gm, '') // use strict
   .replace(/^\s*\/\* eslint.*/gm, '') // eslint
   .replace(/^\s*\/\/ eslint.*/gm, '')
@@ -52,12 +52,15 @@ let result = content
   .replace(/(?<space>^\s*)var/gm, '$<space>let') // var to let
   .replace(/^Object.defineProperty.*/gm, '')
   .replace(/^\/\/# sourceMapping.*/gm, '')
-  .replace(/^.*OMIT.*$/gm, ''); // exclude any line with OMIT word in it
+  .replace(/^.*OMIT.*$/gm, '') // exclude any line with OMIT word in it
+  .split(/(\r\n)|\n|\r/)
+  .filter((i) => i !== undefined && i.trim().length > 0)
+  .join('\n');
 
 result = `rules_version = '2';
 service cloud.firestore {
 match /databases/{database}/documents {
     ${result}
-}}`.replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, ''); // blank lines
+}}`;
 
 writeFileSync(outputFile, result);
