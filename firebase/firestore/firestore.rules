@@ -8,7 +8,7 @@ match /animal/{animalId} {
 match /grocerylist/{grocerylistid} {
     function readIfHelper (request, resource) {
         let isOwner = request.auth.uid == resource.data.id;
-        let isMember = request.auth.token.memberOf == resource.id;
+        let isMember = request.auth.token.memberOf == resource.data.id;
         return isOwner || isMember;
     }
     // TODO: Fix the auth to be a proper Map that validates field names.
@@ -45,16 +45,30 @@ match /grocerylist/{grocerylistid} {
     // Allow through cloud function or another approach
     allow delete: if false; 
 }
-match /invitation/{invitationId}/ {
-    function isPasswordValid (p) { return p.matches('^\\w{3,}$'); }
-    allow create: if request.resource.data.version == '1' &&
-            request.resource.data.groceryListId == request.auth.uid &&
-            isPasswordValid(request.resource.data.password) &&
-            request.resource.data.createdOn == request.time;
+match /invitation/{invitationId} {
+    function isPasswordValid (p) {
+        return p.matches('^\\w{3,}$');
+    }
+    function emailMatchesAuth (request, resource) {
+        return (
+        // TODO Fails when fields are missing; use type-safe Get method instead
+        request.auth.token.email == request.resource.data.owner.email &&
+            request.auth.token.email_verified ==
+                request.resource.data.owner.email.verified);
+    }
+    // TODO Probably buggy
+    // TODO Can't import namespace duration properly
+    function isExpired (request, resource) {
+        let nowSeconds = request.time.toMillis() / 1000;
+        let inviteCreated = resource.data.createdOn.toMillis() / 1000;
+        let ageSeconds = nowSeconds - inviteCreated;
+        let maxAge = duration.value(2, 'w').seconds();
+        return ageSeconds <= maxAge;
+    }
     allow update: if request.resource.data.version == '1' &&
-            request.resource.data.groceryListId == request.auth.uid &&
-            isPasswordValid(request.resource.data.password);
-    allow delete: if resource.data.groceryListId == request.auth.uid;
-    allow read: if resource.data.groceryListId == request.auth.uid;
+            isPasswordValid(request.resource.data.password) &&
+            emailMatchesAuth(request, resource);
+    allow delete: if resource.data.id == request.auth.uid;
+    allow read: if !isExpired(request, resource);
 }
 }}

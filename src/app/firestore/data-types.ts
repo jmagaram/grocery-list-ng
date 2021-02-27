@@ -18,16 +18,16 @@ export interface Animal {
   color: string;
 }
 
-export interface Email {
+export type Email = {
   address: string;
   verified: boolean;
-}
+};
 
-export interface UserToken {
+export type UserToken = {
   uid: Uid;
   name?: string;
   email?: Email;
-}
+};
 
 export interface GroceryList<M extends DocumentMode> {
   id: Uid;
@@ -49,7 +49,7 @@ export interface OpenInvitation<M extends DocumentMode> {
 export interface Invitation<M extends DocumentMode> {
   readonly id: M extends 'create' ? undefined : string;
   readonly version: '1';
-  readonly groceryListId: GroceryListId;
+  owner: UserToken;
   createdOn: M extends 'read' ? Date : FieldValue | Date;
   password: string;
 }

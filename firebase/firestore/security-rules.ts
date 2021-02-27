@@ -6,7 +6,7 @@
 /* eslint-disable prefer-const */
 
 import {
-  ConvertDataModel,
+  MapFire,
   Request,
   Resource,
   AnyRequestKind,
@@ -14,19 +14,20 @@ import {
   UpdateRule,
   DeleteRule,
   ReadRule,
-  UtilityFunction,
-  ReadRequest,
   CreateUpdateRule,
+  StringFireMethods,
   StringFire,
+  duration as durationNamespace,
 } from './security-rule-types';
 import {
   GroceryList,
   Claims as ClaimsClient,
-  OpenInvitation,
   Invitation,
 } from '../../src/app/firestore/data-types';
 
-type Claims = ConvertDataModel<ClaimsClient>;
+let duration = durationNamespace; // OMIT
+
+type Claims = MapFire<ClaimsClient>;
 
 // MATCH /animal/{animalId}
 namespace Animals {
@@ -36,7 +37,7 @@ namespace Animals {
 
 // MATCH /grocerylist/{grocerylistid}
 namespace ShoppingListRules {
-  type Model = ConvertDataModel<GroceryList<'read'>>;
+  type Model = MapFire<GroceryList<'read'>>;
 
   type RequestList<Kind extends AnyRequestKind> = Request<Model, Claims, Kind>;
 
@@ -44,21 +45,13 @@ namespace ShoppingListRules {
 
   type ResourceList = Resource<Model>;
 
-  const somevariable = 'abc'; // OMIT
-  let othervariable = 'abd'; // OMIT
-  var vfff = 'afe'; // OMIT
-
-  // eslint-disable-next-line no-shadow
   const readIfHelper: ReadRule<Model, Claims> = (request, resource) => {
     let isOwner = request.auth.uid == resource.data.id;
-    let isMember = request.auth.token.memberOf == resource.id;
+    let isMember = request.auth.token.memberOf == resource.data.id;
     return isOwner || isMember;
   };
 
-  // TODO: Fix the auth to be a proper Map that validates field names.
-  // TODO: Fix get function type in general; not working
   // TODO: Check invitation
-  // TODO: Find out of optional token fields, like name, are null or missing.
   // eslint-disable-next-line no-shadow
   const createIfHelper: CreateRule<Model, Claims> = (request, resource) => {
     let doc = request.resource.data;
@@ -106,60 +99,44 @@ namespace ShoppingListRules {
 
 // MATCH /invitation/{invitationId}
 namespace Invitation {
-  type Model = ConvertDataModel<Invitation<'read'>>;
+  type Model = MapFire<Invitation<'read'>>;
 
-  const isPasswordValid = (p: StringFire): boolean => p.matches('^\\w{3,}$');
+  const isPasswordValid = (p: StringFire): boolean =>
+    (p as StringFireMethods).matches('^\\w{3,}$');
 
-  const create: CreateRule<Model, Claims> = (request, resource) =>
-    ((request.resource.data.version as unknown) as string) == '1' &&
-    request.resource.data.groceryListId == request.auth.uid &&
-    isPasswordValid(request.resource.data.password) &&
-    request.resource.data.createdOn == request.time;
+  const emailMatchesAuth: CreateUpdateRule<Model, Claims> = (
+    request,
+    resource
+  ) => {
+    return (
+      // TODO Fails when fields are missing; use type-safe Get method instead
+      request.auth.token.email == request.resource.data.owner.email &&
+      request.auth.token.email_verified ==
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        request.resource.data.owner.email!.verified
+    );
+  };
+
+  // TODO Probably buggy
+  // TODO Can't import namespace duration properly
+  const isExpired: ReadRule<Model, Claims> = (request, resource) => {
+    let nowSeconds = request.time.toMillis() / 1000;
+    let inviteCreated = resource.data.createdOn.toMillis() / 1000;
+    let ageSeconds = nowSeconds - inviteCreated;
+    let maxAge = duration.value(2, 'w').seconds();
+    return ageSeconds <= maxAge;
+  };
 
   const update: UpdateRule<Model, Claims> = (request, resource) =>
     ((request.resource.data.version as unknown) as string) == '1' &&
-    request.resource.data.groceryListId == request.auth.uid &&
-    isPasswordValid(request.resource.data.password);
+    isPasswordValid(request.resource.data.password) &&
+    emailMatchesAuth(request, resource);
 
   const deleteIf: DeleteRule<Model, Claims> = (request, resource) =>
-    resource.data.groceryListId == request.auth.uid;
+    resource.data.id == request.auth.uid;
 
   const read: ReadRule<Model, Claims> = (request, resource) =>
-    resource.data.groceryListId == request.auth.uid;
+    !isExpired(request, resource);
 }
-
-// namespace OpenInvitation {
-//   type Model = ConvertDataModel<OpenInvitation<'read'>>;
-
-//   const ownsGroceryList: UtilityFunction<
-//     Model,
-//     Claims,
-//     undefined,
-//     ReadRequest | 'delete'
-//   > = (request, resource) => {
-//     return request.auth.uid == resource.data.groceryListId;
-//   };
-
-//   const isValid = (request: Request<Model, Claims, 'create'>): boolean => {
-//     let data = request.resource.data;
-//     return (
-//       ((data.version as unknown) as string) == '1' &&
-//       data.createdOn == request.time &&
-//       data.groceryListId == request.auth.uid &&
-//       data.password.matches('^\\w{3,}$')
-//     );
-//   };
-
-//   const CREATE: CreateRule<Model, Claims> = (request, resource) =>
-//     isValid(request);
-
-//   const UPDATE: UpdateRule<Model, Claims> = (request, resource) => false;
-
-//   const DELETE: DeleteRule<Model, Claims> = (request, resource) =>
-//     ownsGroceryList(request, resource);
-
-//   const READ: ReadRule<Model, Claims> = (request, resource) =>
-//     ownsGroceryList(request, resource);
-// }
 
 export {};

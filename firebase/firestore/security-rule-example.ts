@@ -11,14 +11,17 @@
 
 import {
   AnyRequestKind,
-  ConvertDataModel,
+  MapFire,
   CreateRule,
   DeleteRule,
   ReadRule,
   Request,
   Resource,
-  StringFire,
+  StringFireMethods,
   UpdateRule,
+  StrippedString,
+  StringParameter,
+  StringFire,
 } from './security-rule-types';
 
 type UserId = string;
@@ -35,13 +38,9 @@ type Claims = {
   isAdministrator: boolean;
 };
 
-type PostModel = ConvertDataModel<Post>;
+type PostModel = MapFire<Post>;
 
-type PostRequest<Kind = AnyRequestKind> = Request<
-  PostModel,
-  Claims,
-  AnyRequestKind
->;
+type PostRequest = Request<PostModel, Claims, AnyRequestKind>;
 
 type PostResource = Resource<PostModel>;
 
@@ -49,7 +48,7 @@ declare const request: PostRequest;
 
 declare const resource: PostResource;
 
-// MATCH /sample/{docid}
+// MATCH /sample/{id}
 namespace Sample {
   function isLoggedIn() {
     return request.auth.uid !== null;
@@ -60,7 +59,7 @@ namespace Sample {
   }
 
   function commentIsValid(s: StringFire) {
-    return s.trim().size() !== 0;
+    return (s as StringFireMethods).trim() !== '';
   }
 
   function hasAllRequiredKeys(data: PostModel) {
