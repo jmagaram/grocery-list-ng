@@ -8,6 +8,7 @@
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable no-shadow */
 
 import {
   AnyRequestKind,
@@ -19,8 +20,6 @@ import {
   Resource,
   StringFireMethods,
   UpdateRule,
-  StrippedString,
-  StringParameter,
   StringFire,
 } from './security-rule-types';
 
@@ -69,7 +68,6 @@ namespace Sample {
     );
   }
 
-  // eslint-disable-next-line no-shadow
   const create: CreateRule<PostModel, Claims> = (request, resource) =>
     isLoggedIn() &&
     hasAllRequiredKeys(request.resource.data) &&
@@ -78,14 +76,11 @@ namespace Sample {
     resource.data.owner === request.auth.uid &&
     commentIsValid(resource.data.comment);
 
-  // eslint-disable-next-line no-shadow
   const read: ReadRule<PostModel, Claims, 'noparams'> = () => isLoggedIn();
 
-  // eslint-disable-next-line no-shadow
   const deleteIf: DeleteRule<PostModel, Claims> = (request, resource) =>
     isAdministrator() || resource.data.owner === request.auth.uid;
 
-  // eslint-disable-next-line no-shadow
   const update: UpdateRule<PostModel, Claims> = (request, resource) =>
     resource.data.modifiedOn === request.time &&
     resource.data.createdOn === request.resource!.data.createdOn && // read only
