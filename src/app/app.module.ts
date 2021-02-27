@@ -18,6 +18,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { AuthPlaygroundComponent } from './auth-playground/auth-playground.component';
+import { MembershipManagerComponent } from './membership-manager/membership-manager.component';
+import { SignInComponent } from './sign-in/sign-in.component';
+import { GroceryListComponent } from './grocery-list/grocery-list.component';
 
 const imports = [
   BrowserModule,
@@ -52,7 +55,7 @@ const providers = [emulatorProviders];
 export const appConfig = { imports, providers };
 
 @NgModule({
-  declarations: [AppComponent, ExperimentComponent, AuthPlaygroundComponent],
+  declarations: [AppComponent, ExperimentComponent, AuthPlaygroundComponent, MembershipManagerComponent, SignInComponent, GroceryListComponent],
   imports: [...imports],
   providers: [...providers],
   bootstrap: [AppComponent],

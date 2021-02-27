@@ -8,6 +8,7 @@ export type FieldValue = any;
 export type CollectionName = 'animal' | 'grocerylist' | 'invitation';
 export const groceryListCollection: CollectionName = 'grocerylist';
 export const animalCollection: CollectionName = 'animal';
+export const invitationCollection: CollectionName = 'invitation';
 
 export interface Claims {
   memberOf?: GroceryListId;

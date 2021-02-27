@@ -1,6 +1,12 @@
 import { from } from 'fromfrom';
 import { range } from '../common/utilities';
-import { FieldValue, GroceryList, Uid } from './data-types';
+import {
+  FieldValue,
+  GroceryList,
+  Invitation,
+  Uid,
+  UserToken,
+} from './data-types';
 
 export const createGroceryList = (i: {
   userId: Uid;
@@ -40,6 +46,17 @@ export const createPassword = () => {
       .reduce((s, total) => s + total, '');
   return `${randomString(3)}-${randomString(4)}`;
 };
+
+export const createInvitation = (
+  owner: UserToken,
+  serverTimestamp: FieldValue
+): Invitation<'create'> => ({
+  id: undefined,
+  createdOn: serverTimestamp,
+  version: '1',
+  owner,
+  password: createPassword(),
+});
 
 // const createGroceryListOpenInvitation = (
 //   serverTimestamp: FieldValue
