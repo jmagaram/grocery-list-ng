@@ -20,3 +20,6 @@ export const mapString = <T, U>(
     return normalized === '' ? ifNullUndefinedOrWhitespace : map(normalized);
   }
 };
+
+export const timeout = <T>(ms: number, value: T) =>
+  new Promise<T>((resolve) => setTimeout(() => resolve(value), ms));
