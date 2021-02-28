@@ -11,12 +11,12 @@ export const isNullUndefinedOrWhitespace = (
 export const mapString = <T, U>(
   s: string | undefined | null,
   map: (trimmed: string) => T,
-  ifNullUndefinedOrWhitespace: () => U
+  ifNullUndefinedOrWhitespace: U
 ): T | U => {
   if (s === undefined || s === null) {
-    return ifNullUndefinedOrWhitespace();
+    return ifNullUndefinedOrWhitespace;
   } else {
     const normalized = s.trim();
-    return normalized === '' ? ifNullUndefinedOrWhitespace() : map(normalized);
+    return normalized === '' ? ifNullUndefinedOrWhitespace : map(normalized);
   }
 };

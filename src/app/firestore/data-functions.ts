@@ -19,16 +19,12 @@ export const createGroceryList = (i: {
     version: '1',
     id: i.userId,
     owner: {
-      name: mapString(
-        i.displayName,
-        (j) => j,
-        () => undefined
-      ),
+      name: mapString(i.displayName, (j) => j, undefined),
       uid: i.userId,
       email: mapString(
         i.emailAddress,
         (j) => ({ address: j, verified: i.emailVerified }),
-        () => undefined
+        undefined
       ),
     },
     createdOn: i.serverTimestamp,

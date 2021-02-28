@@ -24,58 +24,22 @@ describe('string utilities', () => {
 
   describe('mapString', () => {
     it('undefined -> if missing', () => {
-      expect(
-        mapString(
-          undefined,
-          (i) => i.toUpperCase(),
-          () => -1
-        )
-      ).toEqual(-1);
+      expect(mapString(undefined, (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
     it('null -> if missing', () => {
-      expect(
-        mapString(
-          null,
-          (i) => i.toUpperCase(),
-          () => -1
-        )
-      ).toEqual(-1);
+      expect(mapString(null, (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
     it('whitespace -> if missing', () => {
-      expect(
-        mapString(
-          '    ',
-          (i) => i.toUpperCase(),
-          () => -1
-        )
-      ).toEqual(-1);
+      expect(mapString('    ', (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
     it('empty -> if missing', () => {
-      expect(
-        mapString(
-          '',
-          (i) => i.toUpperCase(),
-          () => -1
-        )
-      ).toEqual(-1);
+      expect(mapString('', (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
     it('untrimmed regular string -> map', () => {
-      expect(
-        mapString(
-          '   abc  ',
-          (i) => i.toUpperCase(),
-          () => -1
-        )
-      ).toEqual('ABC');
+      expect(mapString('   abc  ', (i) => i.toUpperCase(), -1)).toEqual('ABC');
     });
     it('trimmed regular string -> map', () => {
-      expect(
-        mapString(
-          'abc',
-          (i) => i.toUpperCase(),
-          () => -1
-        )
-      ).toEqual('ABC');
+      expect(mapString('abc', (i) => i.toUpperCase(), -1)).toEqual('ABC');
     });
   });
 });
