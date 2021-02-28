@@ -10,8 +10,8 @@ import {
 
 export const createGroceryList = (i: {
   userId: Uid;
-  displayName?: string;
-  emailAddress?: string;
+  displayName?: string | null;
+  emailAddress?: string | null;
   emailVerified: boolean;
   serverTimestamp: FieldValue;
 }): GroceryList<'create'> => {
@@ -20,14 +20,14 @@ export const createGroceryList = (i: {
     id: i.userId,
     owner: {
       name:
-        typeof i.displayName === 'string' && i.displayName.trim() !== ''
+        i.displayName && i.displayName.trim() !== ''
           ? i.displayName.trim()
           : undefined,
       uid: i.userId,
       email:
-        typeof i.emailAddress === 'string' && i.emailAddress.trim() !== ''
+        i.emailAddress && i.emailAddress.trim() !== ''
           ? {
-              address: i.emailAddress,
+              address: i.emailAddress.trim(),
               verified: i.emailVerified,
             }
           : undefined,
