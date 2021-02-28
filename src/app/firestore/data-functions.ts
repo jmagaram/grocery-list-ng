@@ -21,12 +21,13 @@ export const createGroceryList = (i: {
     owner: {
       name: i.displayName,
       uid: i.userId,
-      email: i.emailAddress
-        ? {
-            address: i.emailAddress,
-            verified: i.emailVerified,
-          }
-        : undefined,
+      email:
+        typeof i.emailAddress === 'string' && i.emailAddress.trim() !== ''
+          ? {
+              address: i.emailAddress,
+              verified: i.emailVerified,
+            }
+          : undefined,
     },
     createdOn: i.serverTimestamp,
     members: {},
