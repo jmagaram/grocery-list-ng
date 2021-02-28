@@ -19,7 +19,10 @@ export const createGroceryList = (i: {
     version: '1',
     id: i.userId,
     owner: {
-      name: i.displayName,
+      name:
+        typeof i.displayName === 'string' && i.displayName.trim() !== ''
+          ? i.displayName.trim()
+          : undefined,
       uid: i.userId,
       email:
         typeof i.emailAddress === 'string' && i.emailAddress.trim() !== ''
