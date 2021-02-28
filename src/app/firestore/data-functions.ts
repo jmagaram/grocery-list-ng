@@ -1,5 +1,5 @@
 import { from } from 'fromfrom';
-import { range } from '../common/utilities';
+import { mapString, range } from '../common/utilities';
 import {
   FieldValue,
   GroceryList,
@@ -19,18 +19,17 @@ export const createGroceryList = (i: {
     version: '1',
     id: i.userId,
     owner: {
-      name:
-        i.displayName && i.displayName.trim() !== ''
-          ? i.displayName.trim()
-          : undefined,
+      name: mapString(
+        i.displayName,
+        (j) => j,
+        () => undefined
+      ),
       uid: i.userId,
-      email:
-        i.emailAddress && i.emailAddress.trim() !== ''
-          ? {
-              address: i.emailAddress.trim(),
-              verified: i.emailVerified,
-            }
-          : undefined,
+      email: mapString(
+        i.emailAddress,
+        (j) => ({ address: j, verified: i.emailVerified }),
+        () => undefined
+      ),
     },
     createdOn: i.serverTimestamp,
     members: {},
