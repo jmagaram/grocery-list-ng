@@ -29,6 +29,15 @@ describe('firebase functions', () => {
     emailVerified: true,
   });
 
+  const ANONYMOUS = (): UserRecord => {
+    let result = test.auth.makeUserRecord({
+      uid: 'anonymous_id',
+      emailVerified: false,
+    });
+    delete result.displayName;
+    return result;
+  };
+
   beforeEach(async () => {
     await test.firestore.clearFirestoreData({ projectId: PROJECT_ID });
   });
@@ -38,6 +47,11 @@ describe('firebase functions', () => {
   });
 
   it('when create user, create corresponding grocery list', async () => {
+    await admin // TODO Figure out why this is necessary
+      .firestore()
+      .collection(groceryListCollection)
+      .doc(BOB.uid)
+      .delete();
     const wrapped = test.wrap(createGroceryListOnUserCreate);
     await wrapped(BOB);
     let doc = await admin
@@ -51,6 +65,28 @@ describe('firebase functions', () => {
     assert.strictEqual(d.owner.name, BOB.displayName);
     assert.strictEqual(d.owner.email?.address, BOB.email);
     assert.strictEqual(d.owner.email?.verified, BOB.emailVerified);
+    assert.strictEqual(Object.keys(d.members).length, 0);
+  });
+
+  it('when create anonymous user, create corresponding grocery list', async () => {
+    let anonymous = ANONYMOUS();
+    await admin // TODO Figure out why this is necessary
+      .firestore()
+      .collection(groceryListCollection)
+      .doc(anonymous.uid)
+      .delete();
+    const wrapped = test.wrap(createGroceryListOnUserCreate);
+    await wrapped(anonymous);
+    let doc = await admin
+      .firestore()
+      .collection(groceryListCollection)
+      .doc(anonymous.uid)
+      .get();
+    assert.isTrue(doc.exists);
+    let d = doc.data() as GroceryList<'read'>;
+    assert.strictEqual(d.owner.uid, anonymous.uid);
+    assert.strictEqual(d.owner.name, undefined);
+    assert.strictEqual(d.owner.email, undefined);
     assert.strictEqual(Object.keys(d.members).length, 0);
   });
 
