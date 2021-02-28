@@ -21,6 +21,7 @@ import { AuthPlaygroundComponent } from './auth-playground/auth-playground.compo
 import { MembershipManagerComponent } from './membership-manager/membership-manager.component';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { GroceryListComponent } from './grocery-list/grocery-list.component';
+import { CommonModule } from '@angular/common'; // TODO Check if really needed
 
 const imports = [
   BrowserModule,
@@ -32,6 +33,7 @@ const imports = [
   BrowserAnimationsModule,
   MatButtonModule,
   MatInputModule,
+  CommonModule,
 ];
 
 // Do not understand why the port numbers are duplicated here and in the
@@ -55,7 +57,14 @@ const providers = [emulatorProviders];
 export const appConfig = { imports, providers };
 
 @NgModule({
-  declarations: [AppComponent, ExperimentComponent, AuthPlaygroundComponent, MembershipManagerComponent, SignInComponent, GroceryListComponent],
+  declarations: [
+    AppComponent,
+    ExperimentComponent,
+    AuthPlaygroundComponent,
+    MembershipManagerComponent,
+    SignInComponent,
+    GroceryListComponent,
+  ],
   imports: [...imports],
   providers: [...providers],
   bootstrap: [AppComponent],

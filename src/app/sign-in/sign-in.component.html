@@ -1,3 +1,11 @@
 <div style="margin: 10px">
-  <h1>Sign in</h1>
+  <div *ngIf="(user$ | async) === null">
+    <h1>Sign in</h1>
+    <button (click)="signInAnonymously()">Sign in anonymously</button>
+  </div>
+  <div *ngIf="(user$ | async) !== null">
+    <h1>Hello {{ userName$ | async }}</h1>
+    <button (click)="signOut()">Sign out</button>
+  </div>
+  <div *ngIf="this.errorMessage !== ''">Error: {{ this.errorMessage }}</div>
 </div>

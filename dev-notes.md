@@ -1,7 +1,9 @@
 # Work items
 
-TODO NPM install generated this issue after I installed the firebaseui library using the command `npm install firebaseui --save`
+**Can't update Angular CLI to latest version.** TODO
 
-> npm WARN @angular-eslint/builder@1.2.0 requires a peer of > @angular-devkit/architect@~0.1001.4 || ~0.1100.1 but none is > installed. You must install peer dependencies yourself.
->
-> npm WARN firebase-functions-test@0.2.3 requires a peer of > firebase-functions@>=2.0.0 but none is installed. You must install > peer dependencies yourself.
+Tried to type `ng update @angular/cli @angular/core` and got this error...
+
+> Package "@angular-eslint/builder" has an incompatible peer dependency to "@angular-devkit/architect" (requires "~0.1001.4 || ~0.1100.1", would install "0.1102.2").
+
+Identified issue at https://github.com/angular-eslint/angular-eslint/issues/323

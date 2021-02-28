@@ -29,7 +29,6 @@
     "@angular/router": "~11.1.2",
     "firebase": "^8.2.9",
     "fromfrom": "^1.5.0",
-    "ngx-auth-firebaseui": "^5.1.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "^0.11.4"
