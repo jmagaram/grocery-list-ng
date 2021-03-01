@@ -1,10 +1,11 @@
 import { from } from 'rxjs';
-import { reduce } from 'rxjs/operators';
+import { filter, reduce, map } from 'rxjs/operators';
 import {
   isNullUndefinedOrWhitespace,
   mapString,
   timeout,
   filterMap,
+  exists,
 } from './utilities';
 
 describe('other utilities', () => {
@@ -19,6 +20,28 @@ describe('other utilities', () => {
   it('timeout - return the value', async () => {
     const result = await timeout(200, 'abc');
     expect(result).toEqual('abc');
+  });
+
+  const maybeToUpperCase = (s: string | null | undefined) =>
+    exists(s) ? s.toUpperCase() : -1;
+
+  it('exists type guard - null goes is false', () =>
+    expect(maybeToUpperCase(null)).toEqual(-1));
+
+  it('exists type guard - undefined goes is false', () =>
+    expect(maybeToUpperCase(undefined)).toEqual(-1));
+
+  it('exists type guard - not null or undefined is true', () =>
+    expect(maybeToUpperCase('abc')).toEqual('ABC'));
+
+  it('exists type guard - can use to filter rxjs without eslint errors', async () => {
+    const source = from(['a', 'b', null, undefined, 'c', 'd']).pipe(
+      filter(exists),
+      map((i) => i.toUpperCase()),
+      reduce((acc, i) => acc + i)
+    );
+    const result = await source.toPromise();
+    expect(result).toEqual('ABCD');
   });
 
   it('filterMap - excludes projections to undefined', async () => {

@@ -27,6 +27,11 @@ export const mapString = <T, U>(
 export const timeout = <T>(ms: number, value: T) =>
   new Promise<T>((resolve) => setTimeout(() => resolve(value), ms));
 
+export const exists = <T>(
+  value: T | undefined | null
+): value is Exclude<T, null | undefined> =>
+  value !== undefined && value !== null;
+
 // An observable operator that applies the chooser to each element and passes
 // the result through if it is not null or undefined. Inspired by the useful F#
 // 'choose' operators on sequences, lists, and arrays.
