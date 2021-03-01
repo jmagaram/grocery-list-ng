@@ -1,4 +1,11 @@
-import { isNullUndefinedOrWhitespace, mapString, timeout } from './utilities';
+import { from } from 'rxjs';
+import { reduce } from 'rxjs/operators';
+import {
+  isNullUndefinedOrWhitespace,
+  mapString,
+  timeout,
+  filterMap,
+} from './utilities';
 
 describe('other utilities', () => {
   it('timeout - return result after expected delay', async () => {
@@ -12,6 +19,45 @@ describe('other utilities', () => {
   it('timeout - return the value', async () => {
     const result = await timeout(200, 'abc');
     expect(result).toEqual('abc');
+  });
+
+  it('filterMap - excludes projections to undefined', async () => {
+    const convertToStringOrUndefined = (
+      item: number | null | undefined
+    ): string | undefined =>
+      item === null || item === undefined ? undefined : item.toString();
+    const source = from([1, 2, null, undefined, 3, 4]).pipe(
+      filterMap(convertToStringOrUndefined),
+      reduce((acc, i) => acc + i, '')
+    );
+    const result = await source.toPromise();
+    expect(result).toEqual('1234');
+  });
+
+  it('filterMap - excludes projections to null', async () => {
+    const convertToStringOrNull = (
+      item: number | null | undefined
+    ): string | null =>
+      item === null || item === undefined ? null : item.toString();
+    const source = from([1, 2, null, undefined, 3, 4]).pipe(
+      filterMap(convertToStringOrNull),
+      reduce((acc, i) => acc + i, '')
+    );
+    const result = await source.toPromise();
+    expect(result).toEqual('1234');
+  });
+
+  it('filterMap - empty -> empty', async () => {
+    const convertToStringOrNull = (
+      item: number | null | undefined
+    ): string | null =>
+      item === null || item === undefined ? null : item.toString();
+    const source = from([]).pipe(
+      filterMap(convertToStringOrNull),
+      reduce((acc, i) => acc + i, '')
+    );
+    const result = await source.toPromise();
+    expect(result).toEqual('');
   });
 });
 

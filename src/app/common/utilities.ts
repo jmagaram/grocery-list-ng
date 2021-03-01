@@ -1,3 +1,6 @@
+import { EMPTY, OperatorFunction, from as obsFrom } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+
 export function* range(start: number, end: number) {
   for (let i = start; i <= end; i++) {
     yield i;
@@ -23,3 +26,18 @@ export const mapString = <T, U>(
 
 export const timeout = <T>(ms: number, value: T) =>
   new Promise<T>((resolve) => setTimeout(() => resolve(value), ms));
+
+// An observable operator that applies the chooser to each element and passes
+// the result through if it is not null or undefined. Inspired by the useful F#
+// 'choose' operators on sequences, lists, and arrays.
+export const filterMap = <T, U>(
+  chooser: (item: T) => U | undefined | null
+): OperatorFunction<T, U> =>
+  mergeMap((i) => {
+    const r = chooser(i);
+    if (r === null || r === undefined) {
+      return EMPTY;
+    } else {
+      return obsFrom([r]);
+    }
+  });
