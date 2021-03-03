@@ -1,0 +1,37 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button>
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>Sign in</span>
+</mat-toolbar>
+<div class="page">
+  <form
+    fxLayout="column"
+    fxLayoutGap="1rem"
+    [formGroup]="emailFormGroup"
+    (ngSubmit)="submitEmail()"
+  >
+    <mat-form-field fxFlexAlign="start">
+      <mat-label>Email</mat-label>
+      <input
+        required
+        type="email"
+        matInput
+        formControlName="email"
+        placeholder=""
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <mat-hint>Please confirm your email address</mat-hint>
+      <mat-error *ngIf="this.emailControl.touched && this.emailControl.invalid"
+        >Enter a valid email address</mat-error
+      >
+    </mat-form-field>
+    <button fxFlexAlign="start" mat-raised-button color="primary" type="submit">
+      SIGN IN
+    </button>
+    <p class="mat-error" *ngIf="this.errorMessage !== undefined">
+      {{ this.errorMessage }}
+    </p>
+  </form>
+</div>

@@ -1,0 +1,81 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button>
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>Your account</span>
+</mat-toolbar>
+<div class="page" fxLayoutGap="1rem">
+  <ng-container *ngIf="this.user$ | async; let user; else: notLoggedIn">
+    <div *ngIf="isAnonymous(user)" fxLayoutGap="1rem">
+      <p>
+        You're using this service as an anonymous guest. Your data will be lost
+        when you sign out or close your web browser. To keep using this program,
+        click Register - <strong>no password required</strong> and it only takes
+        a minute.
+      </p>
+      <button
+        *ngIf="true"
+        mat-raised-button
+        type="button"
+        fxFlexAlign="start"
+        (click)="signOutAndDelete()"
+      >
+        SIGN OUT
+      </button>
+      <button
+        *ngIf="true"
+        mat-raised-button
+        color="primary"
+        type="button"
+        fxFlexAlign="start"
+        (click)="signIn()"
+      >
+        REGISTER
+      </button>
+    </div>
+    <div fxLayoutGap="1rem" *ngIf="isRegisteredUser(user)">
+      <div>
+        <mat-label>Name</mat-label>
+        <p>{{ stringOr(user?.displayName, "(not provided)") }}</p>
+      </div>
+      <div>
+        <mat-label>Email</mat-label>
+        <p>{{ stringOr(user?.email, "(not provided)") }}</p>
+      </div>
+      <p></p>
+      <button
+        mat-raised-button
+        type="button"
+        fxFlexAlign="start"
+        (click)="deleteAccount()"
+      >
+        DELETE ACCOUNT
+      </button>
+      <button
+        *ngIf="true"
+        mat-raised-button
+        type="button"
+        color="primary"
+        fxFlexAlign="start"
+        (click)="signOut()"
+      >
+        SIGN OUT
+      </button>
+    </div>
+    <p></p>
+  </ng-container>
+  <ng-template #notLoggedIn
+    ><div>
+      You can create an account or use this service as an anonymous guest.
+    </div>
+    <button
+      mat-raised-button
+      type="button"
+      color="primary"
+      fxFlexAlign="start"
+      (click)="signIn()"
+    >
+      GET STARTED
+    </button>
+  </ng-template>
+</div>

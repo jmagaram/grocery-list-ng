@@ -17,11 +17,20 @@ import { ExperimentComponent } from './experiment/experiment.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
+import { MatTabsModule } from '@angular/material/tabs';
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { AuthPlaygroundComponent } from './auth-playground/auth-playground.component';
-import { MembershipManagerComponent } from './membership-manager/membership-manager.component';
-import { SignInComponent } from './sign-in/sign-in.component';
 import { GroceryListComponent } from './grocery-list/grocery-list.component';
 import { CommonModule } from '@angular/common'; // TODO Check if really needed
+import { SignInComponent } from './sign-in/sign-in.component';
+import { SignInProcessEmailLinkComponent } from './sign-in-process-email-link/sign-in-process-email-link.component';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
+import { ProfileComponent } from './profile/profile.component';
 
 const imports = [
   BrowserModule,
@@ -33,7 +42,15 @@ const imports = [
   BrowserAnimationsModule,
   MatButtonModule,
   MatInputModule,
+  MatTabsModule,
+  MatRadioModule,
+  MatIconModule,
+  MatProgressSpinnerModule,
+  FlexLayoutModule,
   CommonModule,
+  MatStepperModule,
+  MatToolbarModule,
+  MatDividerModule,
 ];
 
 // Do not understand why the port numbers are duplicated here and in the
@@ -61,9 +78,10 @@ export const appConfig = { imports, providers };
     AppComponent,
     ExperimentComponent,
     AuthPlaygroundComponent,
-    MembershipManagerComponent,
-    SignInComponent,
     GroceryListComponent,
+    SignInComponent,
+    SignInProcessEmailLinkComponent,
+    ProfileComponent,
   ],
   imports: [...imports],
   providers: [...providers],
