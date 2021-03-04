@@ -6,6 +6,7 @@ import { environment } from './../environments/environment';
 import { AngularFireModule } from '@angular/fire';
 import {
   AngularFirestoreModule,
+  SETTINGS,
   USE_EMULATOR as USE_FIRESTORE_EMULATOR,
 } from '@angular/fire/firestore';
 import {
@@ -69,7 +70,10 @@ const emulatorProviders: Provider[] = environment.useEmulators
     ]
   : [];
 
-const providers = [emulatorProviders];
+const providers = [
+  emulatorProviders,
+  { provide: SETTINGS, useValue: { ignoreUndefinedProperties: true } },
+];
 
 export const appConfig = { imports, providers };
 
