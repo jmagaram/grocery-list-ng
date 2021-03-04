@@ -60,7 +60,7 @@ let result = content
 result = `rules_version = '2';
 service cloud.firestore {
 match /databases/{database}/documents {
-    ${result}
+${result}
 }}`;
 
 writeFileSync(outputFile, result);
