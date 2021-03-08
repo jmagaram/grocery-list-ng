@@ -2,10 +2,9 @@ import { createPassword } from './data-functions';
 import { assert } from 'chai';
 
 describe('password', () => {
-  it('password length is 8 like a phone number', () => {
+  it('password length is at least 7 characters', () => {
     const p = createPassword();
-    assert.equal(p.length, 8);
-    assert.equal(p[3], '-');
+    assert.isAtLeast(p.length, 7);
   });
 
   it('passwords are different', () => {
