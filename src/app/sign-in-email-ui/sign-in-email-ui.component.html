@@ -1,0 +1,123 @@
+<div [style.opacity]="this.isBusy() ? 1 : 0">
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div>
+<div
+  *ngIf="
+    this.state.kind === stateKind.enterEmail ||
+    this.state.kind === stateKind.tryingEmailSignin ||
+    this.state.kind === stateKind.emailErrorReported ||
+    this.state.kind === stateKind.tryingAnonymous ||
+    this.state.kind === stateKind.anonymousErrorReported
+  "
+>
+  <form [formGroup]="emailForm" (ngSubmit)="submitEmailRequest()">
+    <p *ngIf="this.acceptingInvitation">
+      To share someone's grocery list, you'll need to sign in first.
+    </p>
+    <mat-form-field [style.width.ch]="23">
+      <mat-label>Email</mat-label>
+      <input
+        [readonly]="this.isBusy()"
+        matInput
+        [formControl]="emailControl"
+        type="email"
+        required
+      />
+      <mat-error>Enter a valid email address</mat-error>
+    </mat-form-field>
+    <div fxLayoutGap="1rem" fxLayout="row" fxLayoutAlign="start start">
+      <button
+        *ngIf="!this.acceptingInvitation"
+        mat-button
+        mat-raised-button
+        type="button"
+        [disabled]="this.isBusy()"
+        (click)="this.update({ action: this.actionKind.startAnonymousSignin })"
+      >
+        SIGN IN ANONYMOUSLY
+      </button>
+      <button
+        [disabled]="this.isBusy()"
+        mat-button
+        mat-raised-button
+        color="primary"
+        type="submit"
+      >
+        NEXT
+      </button>
+    </div>
+  </form>
+</div>
+<div
+  *ngIf="
+    this.state.kind === stateKind.emailSent ||
+    this.state.kind === stateKind.resendingEmail ||
+    this.state.kind === stateKind.resendingErrorReported
+  "
+>
+  <div *ngIf="this.state.kind === stateKind.resendingEmail">
+    Sending again to <strong>{{ this.state.email }}</strong>
+  </div>
+  <div *ngIf="this.state.kind !== stateKind.resendingEmail">
+    <p>
+      An email was sent to <strong>{{ this.state.email }}</strong>
+    </p>
+    <p>
+      Open the message to finish signing in. If you don't see the email, check
+      your junk folder or
+      <a
+        [routerLink]=""
+        (click)="
+          this.update({
+            action: this.actionKind.requestResendOfEmail,
+            email: this.state.email
+          })
+        "
+        >send the link again</a
+      >
+    </p>
+    <div fxLayout="row" fxLayoutGap="1rem">
+      <div>
+        <button
+          mat-button
+          mat-raised-button
+          (click)="this.update({ action: this.actionKind.goBack })"
+          type="button"
+          [disabled]="this.isBusy()"
+        >
+          BACK
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="this.state.kind === stateKind.anonymousSignInSuccess">
+  You have been signed in anonymously.
+</div>
+<ng-template #errordialog>
+  <div
+    *ngIf="
+      this.state.kind === this.stateKind.emailErrorReported ||
+      this.state.kind === this.stateKind.resendingErrorReported
+    "
+    mat-dialog-content
+  >
+    <p>{{ this.state.error }}</p>
+  </div>
+  <div
+    *ngIf="this.state.kind === this.stateKind.anonymousErrorReported"
+    mat-dialog-content
+  >
+    <p>{{ this.state.error }}</p>
+  </div>
+  <div mat-dialog-actions style="justify-content: flex-end">
+    <button
+      (click)="this.update({ action: this.actionKind.dismissError })"
+      mat-button
+      mat-dialog-close
+    >
+      DISMISS
+    </button>
+  </div>
+</ng-template>

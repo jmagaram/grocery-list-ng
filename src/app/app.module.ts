@@ -27,11 +27,14 @@ import { SignInComponent } from './sign-in/sign-in.component';
 import { SignInProcessEmailLinkComponent } from './sign-in-process-email-link/sign-in-process-email-link.component';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatRadioModule } from '@angular/material/radio';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { ProfileComponent } from './profile/profile.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ScratchpadComponent } from './scratchpad/scratchpad.component';
+import { SignInEmailUiComponent } from './sign-in-email-ui/sign-in-email-ui.component';
 
 const imports = [
   BrowserModule,
@@ -46,12 +49,13 @@ const imports = [
   MatTabsModule,
   MatRadioModule,
   MatIconModule,
-  MatProgressSpinnerModule,
   FlexLayoutModule,
   CommonModule,
   MatStepperModule,
   MatToolbarModule,
   MatDividerModule,
+  MatDialogModule,
+  MatProgressBarModule,
 ];
 
 // Do not understand why the port numbers are duplicated here and in the
@@ -86,6 +90,8 @@ export const appConfig = { imports, providers };
     SignInComponent,
     SignInProcessEmailLinkComponent,
     ProfileComponent,
+    SignInEmailUiComponent,
+    ScratchpadComponent,
   ],
   imports: [...imports],
   providers: [...providers],

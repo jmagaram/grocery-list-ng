@@ -13,10 +13,12 @@ import {
 import { SignInComponent } from './sign-in/sign-in.component';
 import { SignInProcessEmailLinkComponent } from './sign-in-process-email-link/sign-in-process-email-link.component';
 import { ProfileComponent } from './profile/profile.component';
+import { ScratchpadComponent } from './scratchpad/scratchpad.component';
 
 const redirectUnauthenticatedToSignIn = () => redirectUnauthorizedTo('signin');
 
 const routes: Routes = [
+  { path: 'scratchpad', component: ScratchpadComponent },
   { path: 'experiment', component: ExperimentComponent },
   { path: 'authplayground', component: AuthPlaygroundComponent },
   { path: 'signin', component: SignInComponent },

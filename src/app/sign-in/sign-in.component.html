@@ -1,72 +1,7 @@
 <mat-toolbar color="primary">
-  <button *ngIf="!this.isCheckYourEmail()" mat-icon-button>
+  <button mat-icon-button>
     <mat-icon>menu</mat-icon>
-  </button>
-  <button (click)="startOver()" *ngIf="this.isCheckYourEmail()" mat-icon-button>
-    <mat-icon>arrow_back</mat-icon>
   </button>
   <span>Sign in</span>
 </mat-toolbar>
-<div class="page" *ngIf="this.isChooseSignInMethod()">
-  <form
-    fxLayout="column"
-    fxLayoutGap="1rem"
-    [formGroup]="chooseSignInFormGroup"
-    (ngSubmit)="signInWithEmailLink()"
-  >
-    <mat-form-field fxFlexAlign="start">
-      <mat-label>Email</mat-label>
-      <input
-        required
-        type="email"
-        matInput
-        formControlName="email"
-        placeholder=""
-        autocomplete="off"
-        spellcheck="false"
-      />
-      <mat-error *ngIf="emailControl.invalid"
-        >Enter a valid email address</mat-error
-      >
-    </mat-form-field>
-    <div fxlayout="row" fxLayoutGap="1rem">
-      <button
-        mat-raised-button
-        type="button"
-        fxFlexAlign="start"
-        (click)="signInAsGuest()"
-      >
-        CONTINUE AS GUEST
-      </button>
-      <button
-        fxFlexAlign="start"
-        mat-raised-button
-        color="primary"
-        type="submit"
-      >
-        SIGN IN
-      </button>
-    </div>
-    <p class="mat-error" *ngIf="this.errorMessage !== undefined">
-      {{ this.errorMessage }}
-    </p>
-  </form>
-</div>
-<div
-  *ngIf="this.isSendingLink()"
-  class="page"
-  fxlayout="row"
-  fxLayoutAlign="center"
->
-  <div>Sending you a message</div>
-  <mat-spinner></mat-spinner>
-</div>
-<div *ngIf="this.isCheckYourEmail()" class="page">
-  <p>
-    An email was sent to <strong>{{ this.emailControl.value }}</strong>
-  </p>
-  <p>
-    Click the link inside the message to sign in. If you don't see the email
-    message, check your junk mail folder.
-  </p>
-</div>
+<app-sign-in-email-ui #signinui></app-sign-in-email-ui>
