@@ -3,11 +3,11 @@
 </div>
 <div
   *ngIf="
-    this.state.kind === stateKind.enterEmail ||
-    this.state.kind === stateKind.tryingEmailSignin ||
-    this.state.kind === stateKind.emailErrorReported ||
-    this.state.kind === stateKind.tryingAnonymous ||
-    this.state.kind === stateKind.anonymousErrorReported
+    this.state.kind === 'enterEmail' ||
+    (this.state.kind === 'tryingEmail' && !this.state.isResend) ||
+    this.state.kind === 'emailError' ||
+    this.state.kind === 'tryingAnonymous' ||
+    this.state.kind === 'anonymousError'
   "
 >
   <form [formGroup]="emailForm" (ngSubmit)="submitEmailRequest()">
@@ -32,7 +32,7 @@
         mat-raised-button
         type="button"
         [disabled]="this.isBusy()"
-        (click)="this.update({ action: this.actionKind.startAnonymousSignin })"
+        (click)="this.update({ kind: 'startAnonymous' })"
       >
         SIGN IN ANONYMOUSLY
       </button>
@@ -50,15 +50,15 @@
 </div>
 <div
   *ngIf="
-    this.state.kind === stateKind.emailSent ||
-    this.state.kind === stateKind.resendingEmail ||
-    this.state.kind === stateKind.resendingErrorReported
+    this.state.kind === 'emailSuccess' ||
+    (this.state.kind === 'tryingEmail' && this.state.isResend) ||
+    this.state.kind === 'emailError'
   "
 >
-  <div *ngIf="this.state.kind === stateKind.resendingEmail">
+  <div *ngIf="this.state.kind === 'tryingEmail'">
     Sending again to <strong>{{ this.state.email }}</strong>
   </div>
-  <div *ngIf="this.state.kind !== stateKind.resendingEmail">
+  <div *ngIf="this.state.kind !== 'tryingEmail'">
     <p>
       An email was sent to <strong>{{ this.state.email }}</strong>
     </p>
@@ -67,12 +67,7 @@
       your junk folder or
       <a
         [routerLink]=""
-        (click)="
-          this.update({
-            action: this.actionKind.requestResendOfEmail,
-            email: this.state.email
-          })
-        "
+        (click)="this.update({ kind: 'sendAgain', email: this.state.email })"
         >send the link again</a
       >
     </p>
@@ -81,7 +76,7 @@
         <button
           mat-button
           mat-raised-button
-          (click)="this.update({ action: this.actionKind.goBack })"
+          (click)="this.update({ kind: 'useDifferentEmail' })"
           type="button"
           [disabled]="this.isBusy()"
         >
@@ -92,28 +87,19 @@
   </div>
 </div>
 
-<div *ngIf="this.state.kind === stateKind.anonymousSignInSuccess">
+<div *ngIf="this.state.kind === 'anonymousSuccess'">
   You have been signed in anonymously.
 </div>
 <ng-template #errordialog>
-  <div
-    *ngIf="
-      this.state.kind === this.stateKind.emailErrorReported ||
-      this.state.kind === this.stateKind.resendingErrorReported
-    "
-    mat-dialog-content
-  >
+  <div *ngIf="this.state.kind === 'emailError'" mat-dialog-content>
     <p>{{ this.state.error }}</p>
   </div>
-  <div
-    *ngIf="this.state.kind === this.stateKind.anonymousErrorReported"
-    mat-dialog-content
-  >
+  <div *ngIf="this.state.kind === 'anonymousError'" mat-dialog-content>
     <p>{{ this.state.error }}</p>
   </div>
   <div mat-dialog-actions style="justify-content: flex-end">
     <button
-      (click)="this.update({ action: this.actionKind.dismissError })"
+      (click)="this.update({ kind: 'dismissError' })"
       mat-button
       mat-dialog-close
     >

@@ -34,17 +34,17 @@ export class ScratchpadComponent implements OnInit, AfterViewInit, OnDestroy {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     // this.signInControl!.reportProgress({ kind: 'sending' });
     const makeSignInSucceed = true;
-    const signInDelay = 5000;
+    const signInDelay = 3000;
     if (sc) {
       sc.sendLinkRequest
         .pipe(takeUntil(this.destroyed))
         .subscribe(async (i) => {
           await this.wait(signInDelay);
           if (makeSignInSucceed) {
-            sc.update({ action: sc.actionKind.reportEmailSent, email: i });
+            sc.update({ kind: 'emailSent', email: i });
           } else {
             sc.update({
-              action: sc.actionKind.reportEmailError,
+              kind: 'emailError',
               email: i,
               error:
                 'Could not connect to the network. Check all your cables and have some ice cream while you are at it. ',
@@ -56,10 +56,10 @@ export class ScratchpadComponent implements OnInit, AfterViewInit, OnDestroy {
         .subscribe(async (i) => {
           await this.wait(signInDelay);
           if (makeSignInSucceed) {
-            sc.update({ action: sc.actionKind.reportAnonymousSuccess });
+            sc.update({ kind: 'anonymousSuccess' });
           } else {
             sc.update({
-              action: sc.actionKind.reportAnonymousError,
+              kind: 'anonymousError',
               error: 'Weird anonymous sign-in error.',
             });
           }
