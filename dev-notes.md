@@ -27,3 +27,7 @@ https://github.com/angular/components/issues/4580
 
 **Enable Ivy language service** TODO
 Disabled on 3/1/2020; buggy
+
+**Error handler to log exceptions** TODO
+
+https://dev.to/buildmotion/angular-errorhandler-to-handle-or-not-to-handle-1e7l
