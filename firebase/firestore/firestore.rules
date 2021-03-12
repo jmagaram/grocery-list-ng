@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
 match /databases/{database}/documents {
-    match /animal/{animalId} {
+match /animal/{animalId} {
     allow read: if true; 
     allow write: if true; 
 }
@@ -15,12 +15,14 @@ match /grocerylist/{grocerylistid} {
     function createIfHelper (request) {
         let doc = request.resource.data;
         let auth = request.auth;
-        let isOwner = request.auth.uid == doc.id;
+        let isOwner = auth.uid == doc.id;
         let isVersion1 = doc.version == '1';
         let createdNow = doc.createdOn == request.time;
-        let ownerIdMatches = doc.owner.uid == request.auth.uid;
-        let ownerNameMatches = doc.get(["token", "name"], -1);
-        let ownerEmailAddressMatches = doc.get(["token", "email"], -1);
+        let ownerIdMatches = doc.owner.uid == auth.uid;
+        let ownerNameMatches = doc.get(["owner", "name"], -1) == auth.get(["token", "name"], -1);
+        let ownerEmailAddressMatches = 
+        doc.get(["owner", "email", "address"], -1) ==
+            auth.get(["token", "email"], -1);
         let ownerEmailVerifiedMatches = 
         doc.get(["owner", "email", "verified"], -1) ==
             auth.get(["token", "email_verified"], -1);

@@ -54,14 +54,16 @@ namespace ShoppingListRules {
   const createIfHelper: CreateRule<Model, Claims, 'request'> = (request) => {
     let doc = request.resource.data;
     let auth = request.auth;
-    let isOwner = request.auth.uid === doc.id;
+    let isOwner = auth.uid === doc.id;
     let isVersion1 = ((doc.version as unknown) as string) === '1';
     let createdNow = doc.createdOn === request.time;
-    let ownerIdMatches = doc.owner.uid === request.auth.uid;
+    let ownerIdMatches = doc.owner.uid === auth.uid;
     let ownerNameMatches =
       doc.get(-1, (i) => i.owner.name) === auth.get(-1, (i) => i.token.name);
     let ownerEmailAddressMatches =
-      doc.get(-1, (i) => i.owner.email) === auth.get(-1, (i) => i.token.email);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      doc.get(-1, (i) => i.owner.email!.address) ===
+      auth.get(-1, (i) => i.token.email);
     let ownerEmailVerifiedMatches =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       doc.get(-1, (i) => i.owner.email!.verified) ===
