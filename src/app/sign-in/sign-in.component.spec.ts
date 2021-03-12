@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { appConfig } from '../../app/app.module';
 import { SignInComponent } from './sign-in.component';
+import { SignInEmailUiComponent } from '../sign-in-email-ui/sign-in-email-ui.component';
 
 describe('SignInComponent', () => {
   let component: SignInComponent;
@@ -8,9 +9,10 @@ describe('SignInComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SignInComponent ]
-    })
-    .compileComponents();
+      declarations: [SignInComponent, SignInEmailUiComponent],
+      providers: appConfig.providers,
+      imports: appConfig.imports,
+    }).compileComponents();
   });
 
   beforeEach(() => {
