@@ -16,19 +16,19 @@ const content = readFileSync(inputFile, 'utf8');
 
 let result = content
   .replace(
-    /.get\((?<def>[^,]+).*(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+)\.(?<path2>[^.;]+)\.(?<path3>[^.;]+)\.(?<path4>[^.;]+); }\)/gm,
+    /.get\((?<def>[^,]+).*?(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+)\.(?<path2>[^.;]+)\.(?<path3>[^.;]+)\.(?<path4>[^.;]+); }\)/gm,
     `.get(["$<path1>", "$<path2>", "$<path3>", "$<path4>"], $<def>)`
   ) // Strongly-typed get with 4 path arguments
   .replace(
-    /.get\((?<def>[^,]+).*(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+)\.(?<path2>[^.;]+)\.(?<path3>[^.;]+); }\)/gm,
+    /.get\((?<def>[^,]+).*?(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+)\.(?<path2>[^.;]+)\.(?<path3>[^.;]+); }\)/gm,
     `.get(["$<path1>", "$<path2>", "$<path3>"], $<def>)`
   ) // Strongly-typed get with 3 path arguments
   .replace(
-    /.get\((?<def>[^,]+).*(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+)\.(?<path2>[^.;]+); }\)/gm,
+    /.get\((?<def>[^,]+).*?(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+)\.(?<path2>[^.;]+); }\)/gm,
     `.get(["$<path1>", "$<path2>"], $<def>)`
   ) // Strongly-typed get with 2 path arguments
   .replace(
-    /.get\((?<def>[^,]+).*(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+); }\)/gm,
+    /.get\((?<def>[^,]+).*?(?=\{ return)\{ return [^.]+\.(?<path1>[^.;]+); }\)/gm,
     `.get("$<path1>", $<def>)`
   ) // Strongly-typed get with 1 path arguments
   .replace(
