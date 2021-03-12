@@ -126,12 +126,12 @@ const getCollection = (
   c: CollectionName
 ): CollectionReference<DocumentData> => fb.collection(c);
 
-describe('security rules : list', () => {
+describe('security rules : grocery list', () => {
   describe('create', () => {
     interface TestData {
       comment: string;
       user: Auth | undefined;
-      doc: any;
+      doc: GroceryList<'create'>;
       expectation: TestResult;
     }
 
