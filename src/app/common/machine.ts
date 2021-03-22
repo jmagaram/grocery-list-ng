@@ -27,11 +27,36 @@ export interface Machine<
   };
 }
 
-export type StateChange<STATE, EVENT> = {
-  state: STATE;
+const transition = <
+  S extends StateCore<SKEY>,
+  E extends EventCore<EKEY>,
+  SKEY extends string,
+  EKEY extends string
+>(
+  machine: Machine<S, E, SKEY, EKEY>
+): Transition<S, E, S> => {
+  const result = (s: S, e: E) => {
+    const source = s;
+    const stateNode = machine.states[source.state];
+    if (stateNode !== undefined) {
+      const eventNode = stateNode[e.event];
+      if (eventNode !== undefined) {
+        const target = eventNode(source, e);
+        if (target !== undefined) {
+          return target;
+        }
+      }
+    }
+    return undefined;
+  };
+  return result;
+};
+
+export type StateTransition<S, E> = {
+  state: S;
   previous?: {
-    state: STATE;
-    event: EVENT;
+    state: S;
+    event: E;
   };
 };
 
@@ -41,28 +66,23 @@ export class Interpreter<
   SKEY extends string,
   EKEY extends string
 > {
-  state: BehaviorSubject<StateChange<S, E>>;
+  transition: Transition<S, E, S>;
+  current: BehaviorSubject<StateTransition<S, E>>;
 
   constructor(readonly machine: Machine<S, E, SKEY, EKEY>) {
-    this.state = new BehaviorSubject<StateChange<S, E>>({
+    this.transition = transition(machine);
+    this.current = new BehaviorSubject<StateTransition<S, E>>({
       state: machine.initial,
     });
   }
 
   send(event: E) {
-    const source = this.state.value.state;
-    const stateNode = this.machine.states[source.state];
-    if (stateNode !== undefined) {
-      const eventNode = stateNode[event.event];
-      if (eventNode !== undefined) {
-        const target = eventNode(source, event);
-        if (target !== undefined) {
-          this.state.next({
-            state: target,
-            previous: { state: source, event },
-          });
-        }
-      }
+    const source = this.current.value.state;
+    const target = this.transition(source, event);
+    if (target !== undefined) {
+      this.current.next({ state: target, previous: { state: source, event } });
     }
   }
 }
+
+export {};
