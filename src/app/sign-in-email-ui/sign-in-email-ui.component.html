@@ -11,7 +11,7 @@
   "
 >
   <form [formGroup]="emailForm" (ngSubmit)="submitEmailRequest()">
-    <p *ngIf="acceptingInvitation">
+    <p *ngIf="invited">
       To share someone's grocery list, you'll need to sign in first.
     </p>
     <mat-form-field [style.width.ch]="23">
@@ -27,7 +27,7 @@
     </mat-form-field>
     <div fxLayoutGap="1rem" fxLayout="row" fxLayoutAlign="start start">
       <button
-        *ngIf="!acceptingInvitation"
+        *ngIf="!state.invited"
         mat-button
         mat-raised-button
         type="button"

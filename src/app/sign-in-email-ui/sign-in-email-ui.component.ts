@@ -11,9 +11,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Interpreter, Machine } from '../common/machine';
 
-// TODO accepting invitation should be in the state; parallel
-// TODO Hiearchical states possible for each page
-type States = { sentTo: Set<string>; email: string } & (
+type States = {
+  sentTo: Set<string>;
+  email: string;
+  invited: boolean;
+} & (
   | { state: 'chooseEmailOrGuest' }
   | { state: 'guestInProgress' }
   | { state: 'guestError'; error: string }
@@ -25,9 +27,10 @@ type States = { sentTo: Set<string>; email: string } & (
   | { state: 'resendError'; error: string }
 );
 
-const machine: Machine<States, Actions> = {
+const machine = (invited: boolean): Machine<States, Actions> => ({
   initial: {
     state: 'chooseEmailOrGuest',
+    invited,
     email: '',
     sentTo: new Set<string>(),
   },
@@ -38,7 +41,8 @@ const machine: Machine<States, Actions> = {
         email: e.email,
         state: s.sentTo.has(e.email) ? 'emailSuccess' : 'emailInProgress',
       }),
-      chooseGuest: (s, e) => ({ ...s, state: 'guestInProgress' }),
+      chooseGuest: (s, e) =>
+        s.invited ? { ...s, state: 'guestInProgress' } : undefined,
     },
     guestInProgress: {
       guestError: (s, e) => ({
@@ -74,7 +78,7 @@ const machine: Machine<States, Actions> = {
       dismissError: (s, e) => ({ ...s, state: 'emailSuccess' }),
     },
   },
-};
+});
 
 type Actions =
   | { event: 'chooseGuest' }
@@ -95,7 +99,7 @@ type Actions =
 export class SignInEmailUiComponent implements OnInit {
   @Output() sendLinkRequest: EventEmitter<string>;
   @Output() anonymousSigninRequest: EventEmitter<unknown>;
-  @Input() acceptingInvitation: boolean;
+  @Input() invited: boolean;
 
   @ViewChild('errordialog')
   errorDialogTemplate?: TemplateRef<any>;
@@ -112,8 +116,8 @@ export class SignInEmailUiComponent implements OnInit {
     this.emailForm = new FormGroup({ email: this.emailControl });
     this.sendLinkRequest = new EventEmitter<string>();
     this.anonymousSigninRequest = new EventEmitter<unknown>();
-    this.acceptingInvitation = false;
-    this.interpreter = new Interpreter(machine);
+    this.invited = false;
+    this.interpreter = new Interpreter(machine(this.invited));
   }
 
   update(action: Actions) {
@@ -183,5 +187,7 @@ export class SignInEmailUiComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.interpreter = new Interpreter(machine(this.invited));
+  }
 }
