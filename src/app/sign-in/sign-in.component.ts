@@ -53,10 +53,10 @@ export class SignInComponent implements OnInit, OnDestroy, AfterViewInit {
         handleCodeInApp: true,
       });
       window.localStorage.setItem(emailLocalStorageKey, email);
-      this.signInUi.update({ kind: 'emailSent', email });
+      this.signInUi.update({ event: 'emailSent', email });
     } catch (e) {
       if (e instanceof Error) {
-        this.signInUi.update({ kind: 'emailError', email, error: e.message });
+        this.signInUi.update({ event: 'emailError', email, error: e.message });
       } else {
         throw e;
       }
@@ -70,11 +70,11 @@ export class SignInComponent implements OnInit, OnDestroy, AfterViewInit {
     try {
       await this.auth.signOut();
       await this.auth.signInAnonymously();
-      this.signInUi.update({ kind: 'anonymousSuccess' });
+      this.signInUi.update({ event: 'anonymousSuccess' });
       await this.router.navigate(['profile']);
     } catch (e) {
       if (e instanceof Error) {
-        this.signInUi.update({ kind: 'anonymousError', error: e.message });
+        this.signInUi.update({ event: 'anonymousError', error: e.message });
       } else {
         throw e;
       }

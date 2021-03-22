@@ -1,23 +1,23 @@
-<div [style.opacity]="this.isBusy() ? 1 : 0">
+<div [style.opacity]="isBusy ? 1 : 0">
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 </div>
 <div
   *ngIf="
-    this.state.kind === 'enterEmail' ||
-    (this.state.kind === 'tryingEmail' && !this.state.isResend) ||
-    this.state.kind === 'emailError' ||
-    this.state.kind === 'tryingAnonymous' ||
-    this.state.kind === 'anonymousError'
+    state.state === 'enterEmail' ||
+    (state.state === 'tryingEmail' && !state.isResend) ||
+    state.state === 'emailError' ||
+    state.state === 'tryingAnonymous' ||
+    state.state === 'anonymousError'
   "
 >
   <form [formGroup]="emailForm" (ngSubmit)="submitEmailRequest()">
-    <p *ngIf="this.acceptingInvitation">
+    <p *ngIf="acceptingInvitation">
       To share someone's grocery list, you'll need to sign in first.
     </p>
     <mat-form-field [style.width.ch]="23">
       <mat-label>Email</mat-label>
       <input
-        [readonly]="this.isBusy()"
+        [readonly]="isBusy"
         matInput
         [formControl]="emailControl"
         type="email"
@@ -27,17 +27,17 @@
     </mat-form-field>
     <div fxLayoutGap="1rem" fxLayout="row" fxLayoutAlign="start start">
       <button
-        *ngIf="!this.acceptingInvitation"
+        *ngIf="!acceptingInvitation"
         mat-button
         mat-raised-button
         type="button"
-        [disabled]="this.isBusy()"
-        (click)="this.update({ kind: 'startAnonymous' })"
+        [disabled]="isBusy"
+        (click)="update({ event: 'startAnonymous' })"
       >
         SIGN IN ANONYMOUSLY
       </button>
       <button
-        [disabled]="this.isBusy()"
+        [disabled]="isBusy"
         mat-button
         mat-raised-button
         color="primary"
@@ -50,24 +50,24 @@
 </div>
 <div
   *ngIf="
-    this.state.kind === 'emailSuccess' ||
-    (this.state.kind === 'tryingEmail' && this.state.isResend) ||
-    this.state.kind === 'emailError'
+    state.state === 'emailSuccess' ||
+    (state.state === 'tryingEmail' && state.isResend) ||
+    state.state === 'emailError'
   "
 >
-  <div *ngIf="this.state.kind === 'tryingEmail'">
-    Sending again to <strong>{{ this.state.email }}</strong>
+  <div *ngIf="state.state === 'tryingEmail'">
+    Sending again to <strong>{{ state.email }}</strong>
   </div>
-  <div *ngIf="this.state.kind !== 'tryingEmail'">
+  <div *ngIf="state.state !== 'tryingEmail'">
     <p>
-      An email was sent to <strong>{{ this.state.email }}</strong>
+      An email was sent to <strong>{{ state.email }}</strong>
     </p>
     <p>
       Open the message to finish signing in. If you don't see the email, check
       your junk folder or
       <a
         [routerLink]=""
-        (click)="this.update({ kind: 'sendAgain', email: this.state.email })"
+        (click)="update({ event: 'sendAgain', email: state.email })"
         >send the link again</a
       >
     </p>
@@ -76,9 +76,9 @@
         <button
           mat-button
           mat-raised-button
-          (click)="this.update({ kind: 'useDifferentEmail' })"
+          (click)="update({ event: 'useDifferentEmail' })"
           type="button"
-          [disabled]="this.isBusy()"
+          [disabled]="isBusy"
         >
           BACK
         </button>
@@ -87,19 +87,19 @@
   </div>
 </div>
 
-<div *ngIf="this.state.kind === 'anonymousSuccess'">
+<div *ngIf="state.state === 'anonymousSuccess'">
   You have been signed in anonymously.
 </div>
 <ng-template #errordialog>
-  <div *ngIf="this.state.kind === 'emailError'" mat-dialog-content>
-    <p>{{ this.state.error }}</p>
+  <div *ngIf="state.state === 'emailError'" mat-dialog-content>
+    <p>{{ state.error }}</p>
   </div>
-  <div *ngIf="this.state.kind === 'anonymousError'" mat-dialog-content>
-    <p>{{ this.state.error }}</p>
+  <div *ngIf="state.state === 'anonymousError'" mat-dialog-content>
+    <p>{{ state.error }}</p>
   </div>
   <div mat-dialog-actions style="justify-content: flex-end">
     <button
-      (click)="this.update({ kind: 'dismissError' })"
+      (click)="update({ event: 'dismissError' })"
       mat-button
       mat-dialog-close
     >

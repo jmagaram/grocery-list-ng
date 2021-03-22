@@ -9,151 +9,109 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Interpreter, Machine } from '../common/machine';
 
 type States = { sentTo: Set<string> } & (
+  | { state: 'enterEmail'; defaultEmail: string }
+  | { state: 'tryingAnonymous' }
+  | { state: 'anonymousError'; error: string }
+  | { state: 'anonymousSuccess' }
+  | { state: 'tryingEmail'; email: string; isResend: boolean }
   | {
-      kind: 'enterEmail';
-      defaultEmail: string;
-    }
-  | { kind: 'tryingAnonymous' }
-  | { kind: 'anonymousError'; error: string }
-  | { kind: 'anonymousSuccess' }
-  | { kind: 'tryingEmail'; email: string; isResend: boolean }
-  | {
-      kind: 'emailError';
+      state: 'emailError';
       isResend: boolean;
       email: string;
       error: string;
     }
-  | { kind: 'emailSuccess'; email: string }
+  | { state: 'emailSuccess'; email: string }
 );
 
-const isErrorState = (s: States) =>
-  s.kind === 'anonymousError' || s.kind === 'emailError';
-
-const initialState: States = {
-  sentTo: new Set<string>(),
-  kind: 'enterEmail',
-  defaultEmail: '',
+const machine: Machine<States, Actions> = {
+  initial: {
+    state: 'enterEmail',
+    defaultEmail: '',
+    sentTo: new Set<string>(),
+  },
+  states: {
+    enterEmail: {
+      startEmail: (s, e) =>
+        s.sentTo.has(e.email)
+          ? { state: 'emailSuccess', sentTo: s.sentTo, email: e.email }
+          : {
+              state: 'tryingEmail',
+              email: e.email,
+              isResend: false,
+              sentTo: s.sentTo,
+            },
+      startAnonymous: (s, e) => ({
+        state: 'tryingAnonymous',
+        sentTo: s.sentTo,
+      }),
+    },
+    tryingAnonymous: {
+      anonymousError: (s, e) => ({
+        state: 'anonymousError',
+        error: e.error,
+        sentTo: s.sentTo,
+      }),
+      anonymousSuccess: (s, e) => ({
+        state: 'anonymousSuccess',
+        sentTo: s.sentTo,
+      }),
+    },
+    tryingEmail: {
+      emailError: (s, e) => ({
+        state: 'emailError',
+        error: e.error,
+        email: e.email,
+        isResend: s.isResend,
+        sentTo: s.sentTo,
+      }),
+      emailSent: (s, e) => ({
+        state: 'emailSuccess',
+        email: e.email,
+        sentTo: s.sentTo.add(e.email),
+      }),
+    },
+    anonymousError: {
+      dismissError: (s, e) => ({
+        state: 'enterEmail',
+        defaultEmail: '',
+        sentTo: s.sentTo,
+      }),
+    },
+    emailError: {
+      dismissError: (s, e) =>
+        s.sentTo.has(s.email)
+          ? { state: 'emailSuccess', email: s.email, sentTo: s.sentTo }
+          : { state: 'enterEmail', sentTo: s.sentTo, defaultEmail: s.email },
+    },
+    emailSuccess: {
+      useDifferentEmail: (s, e) => ({
+        state: 'enterEmail',
+        defaultEmail: s.email,
+        sentTo: s.sentTo,
+      }),
+      sendAgain: (s, e) => ({
+        state: 'tryingEmail',
+        isResend: true,
+        sentTo: s.sentTo,
+        email: e.email,
+      }),
+    },
+  },
 };
 
 type Actions =
-  | {
-      kind: 'startEmail';
-      email: string;
-    }
-  | {
-      kind: 'sendAgain';
-      email: string;
-    }
-  | {
-      kind: 'startAnonymous';
-    }
-  | { kind: 'dismissError' }
-  | { kind: 'anonymousError'; error: string }
-  | { kind: 'anonymousSuccess' }
-  | { kind: 'emailError'; error: string; email: string }
-  | { kind: 'emailSent'; email: string }
-  | { kind: 'useDifferentEmail' };
-
-const send = (s: States, a: Actions): States => {
-  switch (s.kind) {
-    case 'enterEmail':
-      switch (a.kind) {
-        case 'startEmail': {
-          return !s.sentTo.has(a.email)
-            ? {
-                kind: 'tryingEmail',
-                email: a.email,
-                sentTo: s.sentTo,
-                isResend: false,
-              }
-            : {
-                kind: 'emailSuccess',
-                sentTo: s.sentTo,
-                email: a.email,
-              };
-        }
-        case 'startAnonymous':
-          return {
-            kind: 'tryingAnonymous',
-            sentTo: s.sentTo,
-          };
-      }
-      break;
-    case 'tryingAnonymous':
-      switch (a.kind) {
-        case 'anonymousError':
-          return {
-            kind: 'anonymousError',
-            error: a.error,
-            sentTo: s.sentTo,
-          };
-        case 'anonymousSuccess':
-          return {
-            kind: 'anonymousSuccess',
-            sentTo: s.sentTo,
-          };
-      }
-      break;
-    case 'tryingEmail':
-      switch (a.kind) {
-        case 'emailError':
-          return {
-            kind: 'emailError',
-            email: a.email,
-            error: a.error,
-            sentTo: s.sentTo,
-            isResend: s.isResend,
-          };
-        case 'emailSent':
-          return {
-            kind: 'emailSuccess',
-            email: a.email,
-            sentTo: s.sentTo.add(a.email),
-          };
-      }
-      break;
-    case 'anonymousSuccess':
-      return s;
-    case 'anonymousError':
-      switch (a.kind) {
-        case 'dismissError':
-          return {
-            kind: 'enterEmail',
-            defaultEmail: '',
-            sentTo: s.sentTo,
-          };
-      }
-      break;
-    case 'emailError':
-      switch (a.kind) {
-        case 'dismissError':
-          return s.sentTo.has(s.email)
-            ? { kind: 'emailSuccess', email: s.email, sentTo: s.sentTo }
-            : { kind: 'enterEmail', sentTo: s.sentTo, defaultEmail: s.email };
-      }
-      break;
-    case 'emailSuccess':
-      switch (a.kind) {
-        case 'useDifferentEmail':
-          return {
-            kind: 'enterEmail',
-            defaultEmail: s.email,
-            sentTo: s.sentTo,
-          };
-        case 'sendAgain':
-          return {
-            kind: 'tryingEmail',
-            isResend: true,
-            sentTo: s.sentTo,
-            email: a.email,
-          };
-      }
-      break;
-  }
-  return s;
-};
+  | { event: 'startEmail'; email: string }
+  | { event: 'sendAgain'; email: string }
+  | { event: 'startAnonymous' }
+  | { event: 'dismissError' }
+  | { event: 'anonymousError'; error: string }
+  | { event: 'anonymousSuccess' }
+  | { event: 'emailError'; error: string; email: string }
+  | { event: 'emailSent'; email: string }
+  | { event: 'useDifferentEmail' };
 
 @Component({
   selector: 'app-sign-in-email-ui',
@@ -170,7 +128,7 @@ export class SignInEmailUiComponent implements OnInit {
   errorDialogRef?: MatDialogRef<any, any>;
   emailControl: FormControl;
   emailForm: FormGroup;
-  state: States;
+  interpreter: Interpreter<States, Actions, States['state'], Actions['event']>;
 
   constructor(private dialogService: MatDialog) {
     this.emailControl = new FormControl('', [
@@ -178,18 +136,20 @@ export class SignInEmailUiComponent implements OnInit {
       Validators.email,
     ]);
     this.emailForm = new FormGroup({ email: this.emailControl });
-    this.state = initialState;
     this.sendLinkRequest = new EventEmitter<string>();
     this.anonymousSigninRequest = new EventEmitter<unknown>();
     this.acceptingInvitation = false;
+    this.interpreter = new Interpreter(machine);
   }
 
   update(action: Actions) {
-    const previousState = this.state;
-    this.state = send(this.state, action);
-    const wasError = isErrorState(previousState);
+    this.interpreter.send(action);
+    const isErrorState = (s: States) =>
+      s.state === 'anonymousError' || s.state === 'emailError';
+    const prev = this.interpreter.current.value.previous;
+    const wasError = prev !== undefined && isErrorState(prev.state);
     const isError = isErrorState(this.state);
-    if (action.kind === 'startAnonymous') {
+    if (action.event === 'startAnonymous') {
       this.emailControl.setValue('');
       this.emailForm.reset();
     }
@@ -199,23 +159,28 @@ export class SignInEmailUiComponent implements OnInit {
     if (!wasError && isError) {
       this.openErrorDialog();
     }
-    if (action.kind === 'startEmail' && this.state.kind === 'tryingEmail') {
+    if (action.event === 'startEmail' && this.state.state === 'tryingEmail') {
       this.sendLinkRequest.emit(this.state.email);
     }
-    if (action.kind === 'sendAgain') {
+    if (action.event === 'sendAgain') {
       this.sendLinkRequest.emit(action.email);
     }
     if (
-      action.kind === 'startAnonymous' &&
-      this.state.kind === 'tryingAnonymous'
+      action.event === 'startAnonymous' &&
+      this.state.state === 'tryingAnonymous'
     ) {
       this.anonymousSigninRequest.emit(true);
     }
   }
 
-  isBusy() {
+  get state() {
+    return this.interpreter.current.value.state;
+  }
+
+  get isBusy() {
     return (
-      this.state.kind === 'tryingAnonymous' || this.state.kind === 'tryingEmail'
+      this.state.state === 'tryingEmail' ||
+      this.state.state === 'tryingAnonymous'
     );
   }
 
@@ -234,7 +199,7 @@ export class SignInEmailUiComponent implements OnInit {
   submitEmailRequest() {
     if (this.emailForm.valid) {
       this.update({
-        kind: 'startEmail',
+        event: 'startEmail',
         email: this.emailControl.value.trim(),
       });
     }
