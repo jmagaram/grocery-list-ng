@@ -11,7 +11,7 @@
     [formGroup]="emailFormGroup"
     (ngSubmit)="submitEmail()"
   >
-    <mat-form-field fxFlexAlign="start">
+    <mat-form-field fxFlexAlign="start" [style.width.ch]="23">
       <mat-label>Email</mat-label>
       <input
         required
