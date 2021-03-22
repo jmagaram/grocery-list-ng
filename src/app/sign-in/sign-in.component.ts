@@ -35,7 +35,7 @@ export class SignInComponent implements OnInit, OnDestroy, AfterViewInit {
       .subscribe(async (email) => await this.sendEmailSignInLink(email));
     this.signInUi.anonymousSigninRequest
       .pipe(takeUntil(this.destroyed))
-      .subscribe(async () => await this.startAnonymousSignIn());
+      .subscribe(async () => await this.chooseGuestSignIn());
   }
 
   async sendEmailSignInLink(email: string) {
@@ -53,28 +53,28 @@ export class SignInComponent implements OnInit, OnDestroy, AfterViewInit {
         handleCodeInApp: true,
       });
       window.localStorage.setItem(emailLocalStorageKey, email);
-      this.signInUi.update({ event: 'emailSent', email });
+      this.signInUi.update({ event: 'emailSuccess' });
     } catch (e) {
       if (e instanceof Error) {
-        this.signInUi.update({ event: 'emailError', email, error: e.message });
+        this.signInUi.update({ event: 'emailError', error: e.message });
       } else {
         throw e;
       }
     }
   }
 
-  async startAnonymousSignIn() {
+  async chooseGuestSignIn() {
     if (this.signInUi === undefined) {
       throw new Error('The signInUi was not properly initialized.');
     }
     try {
       await this.auth.signOut();
       await this.auth.signInAnonymously();
-      this.signInUi.update({ event: 'anonymousSuccess' });
+      this.signInUi.update({ event: 'guestSuccess' });
       await this.router.navigate(['profile']);
     } catch (e) {
       if (e instanceof Error) {
-        this.signInUi.update({ event: 'anonymousError', error: e.message });
+        this.signInUi.update({ event: 'guestError', error: e.message });
       } else {
         throw e;
       }

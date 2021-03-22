@@ -11,107 +11,81 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Interpreter, Machine } from '../common/machine';
 
-type States = { sentTo: Set<string> } & (
-  | { state: 'enterEmail'; defaultEmail: string }
-  | { state: 'tryingAnonymous' }
-  | { state: 'anonymousError'; error: string }
-  | { state: 'anonymousSuccess' }
-  | { state: 'tryingEmail'; email: string; isResend: boolean }
-  | {
-      state: 'emailError';
-      isResend: boolean;
-      email: string;
-      error: string;
-    }
-  | { state: 'emailSuccess'; email: string }
+// TODO accepting invitation should be in the state; parallel
+// TODO Hiearchical states possible for each page
+type States = { sentTo: Set<string>; email: string } & (
+  | { state: 'chooseEmailOrGuest' }
+  | { state: 'guestInProgress' }
+  | { state: 'guestError'; error: string }
+  | { state: 'guestSuccess' }
+  | { state: 'emailInProgress' }
+  | { state: 'emailError'; error: string }
+  | { state: 'emailSuccess' }
+  | { state: 'resendInProgress' }
+  | { state: 'resendError'; error: string }
 );
 
 const machine: Machine<States, Actions> = {
   initial: {
-    state: 'enterEmail',
-    defaultEmail: '',
+    state: 'chooseEmailOrGuest',
+    email: '',
     sentTo: new Set<string>(),
   },
   states: {
-    enterEmail: {
-      startEmail: (s, e) =>
-        s.sentTo.has(e.email)
-          ? { state: 'emailSuccess', sentTo: s.sentTo, email: e.email }
-          : {
-              state: 'tryingEmail',
-              email: e.email,
-              isResend: false,
-              sentTo: s.sentTo,
-            },
-      startAnonymous: (s, e) => ({
-        state: 'tryingAnonymous',
-        sentTo: s.sentTo,
-      }),
-    },
-    tryingAnonymous: {
-      anonymousError: (s, e) => ({
-        state: 'anonymousError',
-        error: e.error,
-        sentTo: s.sentTo,
-      }),
-      anonymousSuccess: (s, e) => ({
-        state: 'anonymousSuccess',
-        sentTo: s.sentTo,
-      }),
-    },
-    tryingEmail: {
-      emailError: (s, e) => ({
-        state: 'emailError',
-        error: e.error,
+    chooseEmailOrGuest: {
+      chooseEmail: (s, e) => ({
+        ...s,
         email: e.email,
-        isResend: s.isResend,
-        sentTo: s.sentTo,
+        state: s.sentTo.has(e.email) ? 'emailSuccess' : 'emailInProgress',
       }),
-      emailSent: (s, e) => ({
+      chooseGuest: (s, e) => ({ ...s, state: 'guestInProgress' }),
+    },
+    guestInProgress: {
+      guestError: (s, e) => ({
+        ...s,
+        state: 'guestError',
+        error: e.error,
+      }),
+      guestSuccess: (s, e) => ({ ...s, state: 'guestSuccess' }),
+    },
+    guestError: {
+      dismissError: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
+    },
+    emailInProgress: {
+      emailError: (s, e) => ({ ...s, state: 'emailError', error: e.error }),
+      emailSuccess: (s, e) => ({
+        ...s,
         state: 'emailSuccess',
-        email: e.email,
-        sentTo: s.sentTo.add(e.email),
-      }),
-    },
-    anonymousError: {
-      dismissError: (s, e) => ({
-        state: 'enterEmail',
-        defaultEmail: '',
-        sentTo: s.sentTo,
+        sentTo: s.sentTo.add(s.email),
       }),
     },
     emailError: {
-      dismissError: (s, e) =>
-        s.sentTo.has(s.email)
-          ? { state: 'emailSuccess', email: s.email, sentTo: s.sentTo }
-          : { state: 'enterEmail', sentTo: s.sentTo, defaultEmail: s.email },
+      dismissError: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
     },
     emailSuccess: {
-      useDifferentEmail: (s, e) => ({
-        state: 'enterEmail',
-        defaultEmail: s.email,
-        sentTo: s.sentTo,
-      }),
-      sendAgain: (s, e) => ({
-        state: 'tryingEmail',
-        isResend: true,
-        sentTo: s.sentTo,
-        email: e.email,
-      }),
+      startOver: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
+      resend: (s, e) => ({ ...s, state: 'resendInProgress' }),
+    },
+    resendInProgress: {
+      emailError: (s, e) => ({ ...s, state: 'resendError', error: e.error }),
+      emailSuccess: (s, e) => ({ ...s, state: 'emailSuccess' }),
+    },
+    resendError: {
+      dismissError: (s, e) => ({ ...s, state: 'emailSuccess' }),
     },
   },
 };
 
 type Actions =
-  | { event: 'startEmail'; email: string }
-  | { event: 'sendAgain'; email: string }
-  | { event: 'startAnonymous' }
+  | { event: 'chooseGuest' }
+  | { event: 'chooseEmail'; email: string }
+  | { event: 'resend' }
   | { event: 'dismissError' }
-  | { event: 'anonymousError'; error: string }
-  | { event: 'anonymousSuccess' }
-  | { event: 'emailError'; error: string; email: string }
-  | { event: 'emailSent'; email: string }
-  | { event: 'useDifferentEmail' };
+  | { event: 'guestError'; error: string }
+  | { event: 'guestSuccess' }
+  | { event: 'emailError'; error: string }
+  | { event: 'emailSuccess' }
+  | { event: 'startOver' };
 
 @Component({
   selector: 'app-sign-in-email-ui',
@@ -145,11 +119,11 @@ export class SignInEmailUiComponent implements OnInit {
   update(action: Actions) {
     this.interpreter.send(action);
     const isErrorState = (s: States) =>
-      s.state === 'anonymousError' || s.state === 'emailError';
+      s.state === 'guestError' || s.state === 'emailError';
     const prev = this.interpreter.current.value.previous;
     const wasError = prev !== undefined && isErrorState(prev.state);
     const isError = isErrorState(this.state);
-    if (action.event === 'startAnonymous') {
+    if (action.event === 'chooseGuest') {
       this.emailControl.setValue('');
       this.emailForm.reset();
     }
@@ -159,15 +133,18 @@ export class SignInEmailUiComponent implements OnInit {
     if (!wasError && isError) {
       this.openErrorDialog();
     }
-    if (action.event === 'startEmail' && this.state.state === 'tryingEmail') {
+    if (
+      action.event === 'chooseEmail' &&
+      this.state.state === 'emailInProgress'
+    ) {
       this.sendLinkRequest.emit(this.state.email);
     }
-    if (action.event === 'sendAgain') {
-      this.sendLinkRequest.emit(action.email);
+    if (action.event === 'resend') {
+      this.sendLinkRequest.emit(this.state.email);
     }
     if (
-      action.event === 'startAnonymous' &&
-      this.state.state === 'tryingAnonymous'
+      action.event === 'chooseGuest' &&
+      this.state.state === 'guestInProgress'
     ) {
       this.anonymousSigninRequest.emit(true);
     }
@@ -179,8 +156,9 @@ export class SignInEmailUiComponent implements OnInit {
 
   get isBusy() {
     return (
-      this.state.state === 'tryingEmail' ||
-      this.state.state === 'tryingAnonymous'
+      this.state.state === 'emailInProgress' ||
+      this.state.state === 'guestInProgress' ||
+      this.state.state === 'resendInProgress'
     );
   }
 
@@ -199,7 +177,7 @@ export class SignInEmailUiComponent implements OnInit {
   submitEmailRequest() {
     if (this.emailForm.valid) {
       this.update({
-        event: 'startEmail',
+        event: 'chooseEmail',
         email: this.emailControl.value.trim(),
       });
     }
