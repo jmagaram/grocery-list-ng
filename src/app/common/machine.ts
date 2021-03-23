@@ -66,10 +66,11 @@ export class Interpreter<
   SKEY extends string,
   EKEY extends string
 > {
-  transition: Transition<S, E, S>;
   current: BehaviorSubject<StateTransition<S, E>>;
 
-  constructor(readonly machine: Machine<S, E, SKEY, EKEY>) {
+  private transition: Transition<S, E, S>;
+
+  constructor(private readonly machine: Machine<S, E, SKEY, EKEY>) {
     this.transition = transition(machine);
     this.current = new BehaviorSubject<StateTransition<S, E>>({
       state: machine.initial,

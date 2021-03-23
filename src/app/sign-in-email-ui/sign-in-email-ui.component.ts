@@ -6,9 +6,18 @@ import {
   ViewChild,
   TemplateRef,
   Input,
+  OnDestroy,
 } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  pairwise,
+  takeUntil,
+} from 'rxjs/operators';
 import { Interpreter, Machine } from '../common/machine';
 
 type States = {
@@ -42,7 +51,7 @@ const machine = (invited: boolean): Machine<States, Actions> => ({
         state: s.sentTo.has(e.email) ? 'emailSuccess' : 'emailInProgress',
       }),
       chooseGuest: (s, e) =>
-        s.invited ? { ...s, state: 'guestInProgress' } : undefined,
+        !s.invited ? { ...s, email: '', state: 'guestInProgress' } : undefined,
     },
     guestInProgress: {
       guestError: (s, e) => ({
@@ -96,17 +105,17 @@ type Actions =
   templateUrl: './sign-in-email-ui.component.html',
   styleUrls: ['./sign-in-email-ui.component.scss'],
 })
-export class SignInEmailUiComponent implements OnInit {
+export class SignInEmailUiComponent implements OnInit, OnDestroy {
   @Output() sendLinkRequest: EventEmitter<string>;
   @Output() anonymousSigninRequest: EventEmitter<unknown>;
   @Input() invited: boolean;
-
   @ViewChild('errordialog')
   errorDialogTemplate?: TemplateRef<any>;
   errorDialogRef?: MatDialogRef<any, any>;
   emailControl: FormControl;
   emailForm: FormGroup;
   interpreter: Interpreter<States, Actions, States['state'], Actions['event']>;
+  destroyed: Subject<unknown>;
 
   constructor(private dialogService: MatDialog) {
     this.emailControl = new FormControl('', [
@@ -118,40 +127,14 @@ export class SignInEmailUiComponent implements OnInit {
     this.anonymousSigninRequest = new EventEmitter<unknown>();
     this.invited = false;
     this.interpreter = new Interpreter(machine(this.invited));
+    this.destroyed = new Subject<unknown>();
+  }
+  ngOnDestroy(): void {
+    this.destroyed.next(true);
   }
 
   update(action: Actions) {
     this.interpreter.send(action);
-    const isErrorState = (s: States) =>
-      s.state === 'guestError' || s.state === 'emailError';
-    const prev = this.interpreter.current.value.previous;
-    const wasError = prev !== undefined && isErrorState(prev.state);
-    const isError = isErrorState(this.state);
-    if (action.event === 'chooseGuest') {
-      this.emailControl.setValue('');
-      this.emailForm.reset();
-    }
-    if (wasError && !isError) {
-      this.closeErrorDialog();
-    }
-    if (!wasError && isError) {
-      this.openErrorDialog();
-    }
-    if (
-      action.event === 'chooseEmail' &&
-      this.state.state === 'emailInProgress'
-    ) {
-      this.sendLinkRequest.emit(this.state.email);
-    }
-    if (action.event === 'resend') {
-      this.sendLinkRequest.emit(this.state.email);
-    }
-    if (
-      action.event === 'chooseGuest' &&
-      this.state.state === 'guestInProgress'
-    ) {
-      this.anonymousSigninRequest.emit(true);
-    }
   }
 
   get state() {
@@ -187,7 +170,53 @@ export class SignInEmailUiComponent implements OnInit {
     }
   }
 
+  // TODO Using standard library function for distinct until changed deep equal
   ngOnInit(): void {
     this.interpreter = new Interpreter(machine(this.invited));
+
+    this.interpreter.current
+      .pipe(
+        map(
+          (i) =>
+            i.state.state === 'guestError' ||
+            i.state.state === 'resendError' ||
+            i.state.state === 'emailError'
+        ),
+        pairwise(),
+        filter((i) => i[0] !== i[1])
+      )
+      .subscribe((i) => {
+        if (i[1]) {
+          this.openErrorDialog();
+        } else {
+          this.closeErrorDialog();
+        }
+      });
+
+    this.interpreter.current
+      .pipe(
+        map((i) => i.state),
+        pairwise(),
+        filter(
+          (i) =>
+            i[0].state !== 'guestInProgress' && i[1].state === 'guestInProgress'
+        ),
+        map((i) => i[1])
+      )
+      .subscribe((i) => {
+        this.emailControl.setValue(i.email);
+        this.anonymousSigninRequest.emit(true);
+      });
+
+    const isEmailInProgress = (s: States) =>
+      s.state === 'emailInProgress' || s.state === 'resendInProgress';
+    this.interpreter.current
+      .pipe(
+        map((i) => i.state),
+        pairwise(),
+        filter((i) => !isEmailInProgress(i[0]) && isEmailInProgress(i[1])),
+        map((i) => i[1].email)
+      )
+      .subscribe((email) => this.sendLinkRequest.emit(email));
   }
 }

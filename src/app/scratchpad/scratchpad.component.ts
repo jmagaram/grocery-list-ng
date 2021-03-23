@@ -33,7 +33,7 @@ export class ScratchpadComponent implements OnInit, AfterViewInit, OnDestroy {
     const sc = this.signInControl;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     // this.signInControl!.reportProgress({ kind: 'sending' });
-    const makeSignInSucceed = true;
+    const makeSignInSucceed = false;
     const signInDelay = 3000;
     if (sc) {
       sc.sendLinkRequest
