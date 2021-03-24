@@ -6,20 +6,50 @@ describe('simple state machine', () => {
   type Events =
     | { event: 'start'; initialValue: number }
     | { event: 'increment' }
-    | { event: 'multiplyBy'; operand: number };
+    | { event: 'multiplyBy'; operand: number }
+    | { event: 'stop' };
+
+  let dormantExit: States | undefined;
+  let dormantEnter: States | undefined;
+  let countExit: States | undefined;
+  let countEnter: States | undefined;
+
+  const clearEffects = () => {
+    dormantExit = undefined;
+    dormantEnter = undefined;
+    countExit = undefined;
+    countEnter = undefined;
+  };
 
   const counter: Machine<States, Events> = {
     initial: { state: 'dormant' },
     states: {
       dormant: {
-        start: (s, e) => ({ state: 'counting', value: e.initialValue }),
+        on: {
+          start: (s, e) => ({ state: 'counting', value: e.initialValue }),
+        },
+        exit: (s) => {
+          dormantExit = s;
+        },
+        enter: (s) => {
+          dormantEnter = s;
+        },
       },
       counting: {
-        increment: (s, e) => ({ state: 'counting', value: s.value + 1 }),
-        multiplyBy: (s, e) => ({
-          state: 'counting',
-          value: s.value * e.operand,
-        }),
+        on: {
+          increment: (s, e) => ({ state: 'counting', value: s.value + 1 }),
+          multiplyBy: (s, e) => ({
+            state: 'counting',
+            value: s.value * e.operand,
+          }),
+          stop: (s, e) => ({ state: 'dormant' }),
+        },
+        enter: (s) => {
+          countEnter = s;
+        },
+        exit: (s) => {
+          countExit = s;
+        },
       },
     },
   };
@@ -27,6 +57,36 @@ describe('simple state machine', () => {
   it('initial state equals initial state of machine', () => {
     const i = new Interpreter(counter);
     expect(i.current.value).toEqual({ state: { state: 'dormant' } });
+  });
+
+  it('enter effect invoked for initial state', () => {
+    clearEffects();
+    const i = new Interpreter(counter);
+    expect(dormantEnter).toEqual(i.current.value.state);
+    expect(dormantExit).toBeUndefined();
+    expect(countEnter).toBeUndefined();
+    expect(countExit).toBeUndefined();
+  });
+
+  it('enter and exit effects invoked when transition', () => {
+    const i = new Interpreter(counter);
+    let s: States | undefined;
+
+    clearEffects();
+    s = i.current.value.state;
+    i.send({ event: 'start', initialValue: 4 });
+    expect(dormantExit).toEqual(s);
+    expect(countEnter).toEqual(i.current.value.state);
+    expect(dormantEnter).toBeUndefined();
+    expect(countExit).toBeUndefined();
+
+    clearEffects();
+    s = i.current.value.state;
+    i.send({ event: 'stop' });
+    expect(countExit).toEqual(s);
+    expect(dormantEnter).toEqual(i.current.value.state);
+    expect(countEnter).toBeUndefined();
+    expect(dormantExit).toBeUndefined();
   });
 
   it('send - when event is not expected do nothing', () => {

@@ -6,18 +6,9 @@ import {
   ViewChild,
   TemplateRef,
   Input,
-  OnDestroy,
 } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { Subject } from 'rxjs';
-import {
-  distinctUntilChanged,
-  filter,
-  map,
-  pairwise,
-  takeUntil,
-} from 'rxjs/operators';
 import { Interpreter, Machine } from '../common/machine';
 
 type States = {
@@ -36,59 +27,6 @@ type States = {
   | { state: 'resendError'; error: string }
 );
 
-const machine = (invited: boolean): Machine<States, Actions> => ({
-  initial: {
-    state: 'chooseEmailOrGuest',
-    invited,
-    email: '',
-    sentTo: new Set<string>(),
-  },
-  states: {
-    chooseEmailOrGuest: {
-      chooseEmail: (s, e) => ({
-        ...s,
-        email: e.email,
-        state: s.sentTo.has(e.email) ? 'emailSuccess' : 'emailInProgress',
-      }),
-      chooseGuest: (s, e) =>
-        !s.invited ? { ...s, email: '', state: 'guestInProgress' } : undefined,
-    },
-    guestInProgress: {
-      guestError: (s, e) => ({
-        ...s,
-        state: 'guestError',
-        error: e.error,
-      }),
-      guestSuccess: (s, e) => ({ ...s, state: 'guestSuccess' }),
-    },
-    guestError: {
-      dismissError: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
-    },
-    emailInProgress: {
-      emailError: (s, e) => ({ ...s, state: 'emailError', error: e.error }),
-      emailSuccess: (s, e) => ({
-        ...s,
-        state: 'emailSuccess',
-        sentTo: s.sentTo.add(s.email),
-      }),
-    },
-    emailError: {
-      dismissError: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
-    },
-    emailSuccess: {
-      startOver: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
-      resend: (s, e) => ({ ...s, state: 'resendInProgress' }),
-    },
-    resendInProgress: {
-      emailError: (s, e) => ({ ...s, state: 'resendError', error: e.error }),
-      emailSuccess: (s, e) => ({ ...s, state: 'emailSuccess' }),
-    },
-    resendError: {
-      dismissError: (s, e) => ({ ...s, state: 'emailSuccess' }),
-    },
-  },
-});
-
 type Actions =
   | { event: 'chooseGuest' }
   | { event: 'chooseEmail'; email: string }
@@ -105,7 +43,7 @@ type Actions =
   templateUrl: './sign-in-email-ui.component.html',
   styleUrls: ['./sign-in-email-ui.component.scss'],
 })
-export class SignInEmailUiComponent implements OnInit, OnDestroy {
+export class SignInEmailUiComponent implements OnInit {
   @Output() sendLinkRequest: EventEmitter<string>;
   @Output() anonymousSigninRequest: EventEmitter<unknown>;
   @Input() invited: boolean;
@@ -114,8 +52,8 @@ export class SignInEmailUiComponent implements OnInit, OnDestroy {
   errorDialogRef?: MatDialogRef<any, any>;
   emailControl: FormControl;
   emailForm: FormGroup;
-  interpreter: Interpreter<States, Actions, States['state'], Actions['event']>;
-  destroyed: Subject<unknown>;
+  interpreter?: Interpreter<States, Actions, States['state'], Actions['event']>;
+  machine?: Machine<States, Actions>;
 
   constructor(private dialogService: MatDialog) {
     this.emailControl = new FormControl('', [
@@ -126,19 +64,15 @@ export class SignInEmailUiComponent implements OnInit, OnDestroy {
     this.sendLinkRequest = new EventEmitter<string>();
     this.anonymousSigninRequest = new EventEmitter<unknown>();
     this.invited = false;
-    this.interpreter = new Interpreter(machine(this.invited));
-    this.destroyed = new Subject<unknown>();
-  }
-  ngOnDestroy(): void {
-    this.destroyed.next(true);
   }
 
   update(action: Actions) {
-    this.interpreter.send(action);
+    this.interpreter?.send(action);
   }
 
   get state() {
-    return this.interpreter.current.value.state;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.interpreter!.current.value.state;
   }
 
   get isBusy() {
@@ -172,51 +106,100 @@ export class SignInEmailUiComponent implements OnInit, OnDestroy {
 
   // TODO Using standard library function for distinct until changed deep equal
   ngOnInit(): void {
-    this.interpreter = new Interpreter(machine(this.invited));
-
-    this.interpreter.current
-      .pipe(
-        map(
-          (i) =>
-            i.state.state === 'guestError' ||
-            i.state.state === 'resendError' ||
-            i.state.state === 'emailError'
-        ),
-        pairwise(),
-        filter((i) => i[0] !== i[1])
-      )
-      .subscribe((i) => {
-        if (i[1]) {
-          this.openErrorDialog();
-        } else {
-          this.closeErrorDialog();
-        }
-      });
-
-    this.interpreter.current
-      .pipe(
-        map((i) => i.state),
-        pairwise(),
-        filter(
-          (i) =>
-            i[0].state !== 'guestInProgress' && i[1].state === 'guestInProgress'
-        ),
-        map((i) => i[1])
-      )
-      .subscribe((i) => {
-        this.emailControl.setValue(i.email);
-        this.anonymousSigninRequest.emit(true);
-      });
-
-    const isEmailInProgress = (s: States) =>
-      s.state === 'emailInProgress' || s.state === 'resendInProgress';
-    this.interpreter.current
-      .pipe(
-        map((i) => i.state),
-        pairwise(),
-        filter((i) => !isEmailInProgress(i[0]) && isEmailInProgress(i[1])),
-        map((i) => i[1].email)
-      )
-      .subscribe((email) => this.sendLinkRequest.emit(email));
+    this.machine = {
+      initial: {
+        state: 'chooseEmailOrGuest',
+        invited: this.invited,
+        email: '',
+        sentTo: new Set<string>(),
+      },
+      states: {
+        chooseEmailOrGuest: {
+          on: {
+            chooseEmail: (s, e) => ({
+              ...s,
+              email: e.email,
+              state: s.sentTo.has(e.email) ? 'emailSuccess' : 'emailInProgress',
+            }),
+            chooseGuest: (s, e) =>
+              !s.invited
+                ? { ...s, email: '', state: 'guestInProgress' }
+                : undefined,
+          },
+        },
+        guestInProgress: {
+          on: {
+            guestError: (s, e) => ({
+              ...s,
+              state: 'guestError',
+              error: e.error,
+            }),
+            guestSuccess: (s, e) => ({ ...s, state: 'guestSuccess' }),
+          },
+          enter: (s) => {
+            this.emailControl.setValue(s.email);
+            this.anonymousSigninRequest.emit(true);
+          },
+        },
+        guestError: {
+          on: {
+            dismissError: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
+          },
+          enter: (s) => this.openErrorDialog(),
+          exit: (s) => this.closeErrorDialog(),
+        },
+        emailInProgress: {
+          on: {
+            emailError: (s, e) => ({
+              ...s,
+              state: 'emailError',
+              error: e.error,
+            }),
+            emailSuccess: (s, e) => ({
+              ...s,
+              state: 'emailSuccess',
+              sentTo: s.sentTo.add(s.email),
+            }),
+          },
+          enter: (s) => {
+            this.sendLinkRequest.emit(s.email);
+          },
+        },
+        emailError: {
+          on: {
+            dismissError: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
+          },
+          enter: (s) => this.openErrorDialog(),
+          exit: (s) => this.closeErrorDialog(),
+        },
+        emailSuccess: {
+          on: {
+            startOver: (s, e) => ({ ...s, state: 'chooseEmailOrGuest' }),
+            resend: (s, e) => ({ ...s, state: 'resendInProgress' }),
+          },
+        },
+        resendInProgress: {
+          on: {
+            emailError: (s, e) => ({
+              ...s,
+              state: 'resendError',
+              error: e.error,
+            }),
+            emailSuccess: (s, e) => ({ ...s, state: 'emailSuccess' }),
+          },
+          enter: (s) => {
+            this.sendLinkRequest.emit(s.email);
+          },
+        },
+        resendError: {
+          on: {
+            dismissError: (s, e) => ({ ...s, state: 'emailSuccess' }),
+          },
+          enter: (s) => this.openErrorDialog(),
+          exit: (s) => this.closeErrorDialog(),
+        },
+      },
+    };
+    this.interpreter = new Interpreter(this.machine);
   }
 }

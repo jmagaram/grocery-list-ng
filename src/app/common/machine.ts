@@ -22,28 +22,56 @@ export interface Machine<
   initial: S;
   states: {
     [SK in S['state']]?: {
-      [EK in E['event']]?: Transition<S & StateCore<SK>, E & EventCore<EK>, S>;
+      enter?: (s: S) => void;
+      exit?: (s: S) => void;
+      on: {
+        [EK in E['event']]?: Transition<
+          S & StateCore<SK>,
+          E & EventCore<EK>,
+          S
+        >;
+      };
     };
   };
 }
 
-const transition = <
+type ProcessEvent<STATE, EVENT> = Transition<
+  STATE,
+  EVENT,
+  { target: STATE; exitEffect?: () => void; enterEffect?: () => void }
+>;
+
+const processEvent = <
   S extends StateCore<SKEY>,
   E extends EventCore<EKEY>,
   SKEY extends string,
   EKEY extends string
 >(
   machine: Machine<S, E, SKEY, EKEY>
-): Transition<S, E, S> => {
-  const result = (s: S, e: E) => {
-    const source = s;
-    const stateNode = machine.states[source.state];
-    if (stateNode !== undefined) {
-      const eventNode = stateNode[e.event];
+) => {
+  const result: ProcessEvent<S, E> = (source: S, event: E) => {
+    const sourceNode = machine.states[source.state];
+    if (sourceNode !== undefined) {
+      const eventNode = sourceNode.on[event.event];
       if (eventNode !== undefined) {
-        const target = eventNode(source, e);
+        const target = eventNode(source, event);
         if (target !== undefined) {
-          return target;
+          const targetNode = machine.states[target.state];
+          let exitEffect: (() => void) | undefined;
+          if (sourceNode.exit !== undefined) {
+            const f = sourceNode.exit;
+            exitEffect = () => f(source);
+          }
+          let enterEffect: (() => void) | undefined;
+          if (targetNode?.enter !== undefined) {
+            const f = targetNode.enter;
+            enterEffect = () => f(target);
+          }
+          return {
+            target,
+            exitEffect,
+            enterEffect,
+          };
         }
       }
     }
@@ -67,21 +95,28 @@ export class Interpreter<
   EKEY extends string
 > {
   current: BehaviorSubject<StateTransition<S, E>>;
-
-  private transition: Transition<S, E, S>;
+  private process: ProcessEvent<S, E>;
 
   constructor(private readonly machine: Machine<S, E, SKEY, EKEY>) {
-    this.transition = transition(machine);
+    this.process = processEvent(machine);
     this.current = new BehaviorSubject<StateTransition<S, E>>({
       state: machine.initial,
     });
+    this.machine.states[this.current.value.state.state]?.enter?.(
+      this.current.value.state
+    );
   }
 
   send(event: E) {
     const source = this.current.value.state;
-    const target = this.transition(source, event);
-    if (target !== undefined) {
-      this.current.next({ state: target, previous: { state: source, event } });
+    const result = this.process(source, event);
+    if (result !== undefined) {
+      result.exitEffect?.();
+      this.current.next({
+        state: result.target,
+        previous: { state: source, event },
+      });
+      result.enterEffect?.();
     }
   }
 }
