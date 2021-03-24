@@ -62,7 +62,6 @@
     "eslint-plugin-jsdoc": "30.7.6",
     "eslint-plugin-prefer-arrow": "1.2.2",
     "firebase-admin": "^9.5.0",
-    "firebase-functions-test": "^0.2.3",
     "firebase-tools": "^9.7.0",
     "fireward": "^1.6.0",
     "fuzzy": "^0.1.3",
