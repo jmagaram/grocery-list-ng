@@ -6,6 +6,9 @@ import {
   transition,
 } from '@angular/animations';
 
+// https://angular.io/guide/transition-and-triggers#enter-and-leave-aliases
+// https://fireship.io/lessons/angular-router-animations/
+
 const enterTimings = '500ms ease-out';
 const leaveTimings = '500ms ease-in';
 const offPageLeft = 'translateX(-75%)';
