@@ -1,90 +1,94 @@
 <div [style.opacity]="isBusy ? 1 : 0">
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 </div>
-<div
-  *ngIf="
-    state.state === 'chooseEmailOrGuest' ||
-    state.state === 'emailInProgress' ||
-    state.state === 'emailError' ||
-    state.state === 'guestInProgress' ||
-    state.state === 'guestError'
-  "
->
-  <form [formGroup]="emailForm" (ngSubmit)="submitEmailRequest()">
-    <p *ngIf="invited">
-      To share someone's grocery list, you'll need to sign in first.
-    </p>
-    <mat-form-field [style.width.ch]="23">
-      <mat-label>Email</mat-label>
-      <input
-        [readonly]="isBusy"
-        matInput
-        [formControl]="emailControl"
-        type="email"
-        required
-      />
-      <mat-error>Enter a valid email address</mat-error>
-    </mat-form-field>
-    <div fxLayoutGap="1rem" fxLayout="row" fxLayoutAlign="start start">
-      <button
-        *ngIf="!state.invited"
-        mat-button
-        mat-raised-button
-        type="button"
-        [disabled]="isBusy"
-        (click)="update({ event: 'chooseGuest' })"
-      >
-        SIGN IN ANONYMOUSLY
-      </button>
-      <button
-        [disabled]="isBusy"
-        mat-button
-        mat-raised-button
-        color="primary"
-        type="submit"
-      >
-        NEXT
-      </button>
-    </div>
-  </form>
-</div>
-<div
-  *ngIf="
-    state.state === 'emailSuccess' ||
-    state.state === 'resendInProgress' ||
-    state.state === 'resendError'
-  "
->
-  <div *ngIf="state.state === 'resendInProgress'">
-    Sending again to <strong>{{ state.email }}</strong>
-  </div>
-  <div *ngIf="state.state !== 'resendInProgress'">
-    <p>
-      An email was sent to <strong>{{ state.email }}</strong>
-    </p>
-    <p>
-      Open the message to finish signing in. If you don't see the email, check
-      your junk folder or
-      <a [routerLink]="" (click)="update({ event: 'resend' })"
-        >send the link again</a
-      >
-    </p>
-    <div fxLayout="row" fxLayoutGap="1rem">
-      <div>
+<div>
+  <div
+    @leftPanel
+    *ngIf="
+      state.state === 'chooseEmailOrGuest' ||
+      state.state === 'emailInProgress' ||
+      state.state === 'emailError' ||
+      state.state === 'guestInProgress' ||
+      state.state === 'guestError'
+    "
+  >
+    <form [formGroup]="emailForm" (ngSubmit)="submitEmailRequest()">
+      <p *ngIf="invited">
+        To share someone's grocery list, you'll need to sign in first.
+      </p>
+      <mat-form-field [style.width.ch]="23">
+        <mat-label>Email</mat-label>
+        <input
+          [readonly]="isBusy"
+          matInput
+          [formControl]="emailControl"
+          type="email"
+          required
+        />
+        <mat-error>Enter a valid email address</mat-error>
+      </mat-form-field>
+      <div fxLayoutGap="1rem" fxLayout="row" fxLayoutAlign="start start">
         <button
+          *ngIf="!state.invited"
           mat-button
           mat-raised-button
-          (click)="update({ event: 'startOver' })"
           type="button"
           [disabled]="isBusy"
+          (click)="update({ event: 'chooseGuest' })"
         >
-          BACK
+          SIGN IN ANONYMOUSLY
         </button>
+        <button
+          [disabled]="isBusy"
+          mat-button
+          mat-raised-button
+          color="primary"
+          type="submit"
+        >
+          NEXT
+        </button>
+      </div>
+    </form>
+  </div>
+  <div
+    @rightPanel
+    *ngIf="
+      state.state === 'emailSuccess' ||
+      state.state === 'resendInProgress' ||
+      state.state === 'resendError'
+    "
+  >
+    <div *ngIf="state.state === 'resendInProgress'">
+      Sending again to <strong>{{ state.email }}</strong>
+    </div>
+    <div *ngIf="state.state !== 'resendInProgress'">
+      <p>
+        An email was sent to <strong>{{ state.email }}</strong>
+      </p>
+      <p>
+        Open the message to finish signing in. If you don't see the email, check
+        your junk folder or
+        <a [routerLink]="" (click)="update({ event: 'resend' })"
+          >send the link again</a
+        >
+      </p>
+      <div fxLayout="row" fxLayoutGap="1rem">
+        <div>
+          <button
+            mat-button
+            mat-raised-button
+            (click)="update({ event: 'startOver' })"
+            type="button"
+            [disabled]="isBusy"
+          >
+            BACK
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
-<div *ngIf="state.state === 'guestSuccess'">
+<div @rightPanel *ngIf="state.state === 'guestSuccess'">
   You have been signed in anonymously.
 </div>
 <ng-template #errordialog>

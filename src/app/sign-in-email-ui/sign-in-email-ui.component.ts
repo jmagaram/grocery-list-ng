@@ -7,9 +7,11 @@ import {
   TemplateRef,
   Input,
 } from '@angular/core';
+import { trigger } from '@angular/animations';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Interpreter, Machine } from '../common/machine';
+import { leftPanel, rightPanel } from '../common/animations';
 
 type States = {
   sentTo: Set<string>;
@@ -42,6 +44,10 @@ type Actions =
   selector: 'app-sign-in-email-ui',
   templateUrl: './sign-in-email-ui.component.html',
   styleUrls: ['./sign-in-email-ui.component.scss'],
+  animations: [
+    trigger('leftPanel', leftPanel),
+    trigger('rightPanel', rightPanel),
+  ],
 })
 export class SignInEmailUiComponent implements OnInit {
   @Output() sendLinkRequest: EventEmitter<string>;
