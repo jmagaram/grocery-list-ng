@@ -44,29 +44,21 @@ match /grocerylist/{grocerylistid} {
     allow delete: if false; 
 }
 match /invitation/{invitationId} {
-    function isPasswordValid (p) {
-        return p.matches('^\\w{3,}$');
-    }
-    function emailMatchesAuth (request) {
-        return (
-        // TODO Fails when fields are missing; use type-safe Get method instead
-        request.auth.token.email == request.resource.data.owner.email &&
-            request.auth.token.email_verified ==
-                request.resource.data.owner.email.verified);
-    }
-    // TODO Probably buggy
-    // TODO Can't import namespace duration properly
-    function isExpired (request, resource) {
-        let nowSeconds = request.time.toMillis() / 1000;
-        let inviteCreated = resource.data.createdOn.toMillis() / 1000;
-        let ageSeconds = nowSeconds - inviteCreated;
-        let maxAge = duration.value(2, 'w').seconds();
-        return ageSeconds <= maxAge;
-    }
-    allow update: if request.resource.data.version == '1' &&
-            isPasswordValid(request.resource.data.password) &&
-            emailMatchesAuth(request);
-    allow delete: if resource.data.id == request.auth.uid;
-    allow read: if !isExpired(request, resource);
+// TODO Validate password
+    allow create: if request.auth != null &&
+            request.resource.data.owner.uid == request.auth.uid &&
+            request.resource.data.version == '1' &&
+            request.resource.data.createdOn == request.time &&
+            request.resource.data.get(["owner", "email", "address"], -1) ==
+                request.auth.get(["token", "email"], -1) &&
+            request.resource.data.get(["owner", "email", "verified"], -1) ==
+                request.auth.get(["token", "email_verified"], -1) &&
+            request.resource.data.get(["owner", "name"], -1) ==
+                request.auth.get(["token", "name"], -1);
+    allow update: if false; 
+    allow delete: if request.auth.uid == resource.data.owner.uid;
+    allow list: if request.auth.uid == resource.data.owner.uid;
+    allow get: if request.auth != null &&
+            request.auth.token.firebase.sign_in_provider != 'anonymous';
 }
 }}

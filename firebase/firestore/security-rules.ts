@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable arrow-body-style */
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable @typescript-eslint/no-namespace */
@@ -16,6 +17,8 @@ import {
   StringFireMethods,
   StringFire,
   duration as durationNamespace,
+  ListRule,
+  GetRule,
 } from './security-rule-types';
 import {
   GroceryList,
@@ -97,44 +100,33 @@ namespace ShoppingListRules {
 }
 
 // MATCH /invitation/{invitationId}
+// TODO Validate password
 namespace Invitation {
   type Model = MapFire<Invitation<'read'>>;
 
-  const isPasswordValid = (p: StringFire): boolean =>
-    (p as StringFireMethods).matches('^\\w{3,}$');
+  const create: CreateRule<Model, Claims> = (request, resource) =>
+    request.auth !== null &&
+    request.resource.data.owner.uid === request.auth.uid &&
+    request.resource.data.version === '1' &&
+    request.resource.data.createdOn === request.time &&
+    request.resource.data.get(-1, (i) => i.owner.email!.address) ===
+      request.auth.get(-1, (j) => j.token.email) &&
+    request.resource.data.get(-1, (i) => i.owner.email!.verified) ===
+      request.auth.get(-1, (j) => j.token.email_verified) &&
+    request.resource.data.get(-1, (i) => i.owner.name) ===
+      request.auth.get(-1, (j) => j.token.name);
 
-  const emailMatchesAuth: CreateUpdateRule<Model, Claims, 'request'> = (
-    request
-  ) => {
-    return (
-      // TODO Fails when fields are missing; use type-safe Get method instead
-      request.auth.token.email === request.resource.data.owner.email &&
-      request.auth.token.email_verified ===
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        request.resource.data.owner.email!.verified
-    );
-  };
-
-  // TODO Probably buggy
-  // TODO Can't import namespace duration properly
-  const isExpired: ReadRule<Model, Claims> = (request, resource) => {
-    let nowSeconds = request.time.toMillis() / 1000;
-    let inviteCreated = resource.data.createdOn.toMillis() / 1000;
-    let ageSeconds = nowSeconds - inviteCreated;
-    let maxAge = duration.value(2, 'w').seconds();
-    return ageSeconds <= maxAge;
-  };
-
-  const update: UpdateRule<Model, Claims> = (request, resource) =>
-    ((request.resource.data.version as unknown) as string) === '1' &&
-    isPasswordValid(request.resource.data.password) &&
-    emailMatchesAuth(request);
+  const update: UpdateRule<Model, Claims> = (request, resource) => false;
 
   const deleteIf: DeleteRule<Model, Claims> = (request, resource) =>
-    resource.data.id === request.auth.uid;
+    request.auth.uid === resource.data.owner.uid;
 
-  const read: ReadRule<Model, Claims> = (request, resource) =>
-    !isExpired(request, resource);
+  const list: ListRule<Model, Claims> = (request, resource) =>
+    request.auth.uid === resource.data.owner.uid;
+
+  const get: GetRule<Model, Claims> = (request, resource) =>
+    request.auth !== null &&
+    request.auth.token.firebase.sign_in_provider !== 'anonymous';
 }
 
 export {};
