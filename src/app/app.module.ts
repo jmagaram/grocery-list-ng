@@ -35,6 +35,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ScratchpadComponent } from './scratchpad/scratchpad.component';
 import { SignInEmailUiComponent } from './sign-in-email-ui/sign-in-email-ui.component';
+import { ShareUiComponent } from './share-ui/share-ui.component';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 const imports = [
   BrowserModule,
@@ -56,6 +58,7 @@ const imports = [
   MatDividerModule,
   MatDialogModule,
   MatProgressBarModule,
+  MatSnackBarModule,
 ];
 
 // Do not understand why the port numbers are duplicated here and in the
@@ -92,6 +95,7 @@ export const appConfig = { imports, providers };
     ProfileComponent,
     SignInEmailUiComponent,
     ScratchpadComponent,
+    ShareUiComponent,
   ],
   imports: [...imports],
   providers: [...providers],

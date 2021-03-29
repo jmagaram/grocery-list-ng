@@ -29,3 +29,9 @@ Disabled on 3/1/2020; buggy
 **Error handler to log exceptions** #TODO
 
 https://dev.to/buildmotion/angular-errorhandler-to-handle-or-not-to-handle-1e7l
+
+**Always import from 'firebase/app'** #TODO
+
+See https://firebase.google.com/support/release-notes/js#version_800_-_october_26_2020
+
+Use: `import firebase from 'firebase/app'`

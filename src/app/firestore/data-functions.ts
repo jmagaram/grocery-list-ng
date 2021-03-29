@@ -56,10 +56,3 @@ export const createInvitation = (
   owner,
   password: createPassword(),
 });
-
-// const createGroceryListOpenInvitation = (
-//   serverTimestamp: FieldValue
-// ): OpenInvitation<'create'> => ({
-//   createdOn: serverTimestamp,
-//   password: createPassword(),
-// });
