@@ -6,8 +6,15 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ManageInvitationService } from './manage-invitation.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { mapString } from '../common/utilities';
 
 type User = { uid: string; displayName?: string };
+
+// TODO Confusing to use mapString
+const normalizeUser = (u: User): User => ({
+  ...u,
+  displayName: mapString(u.displayName, (i) => i, undefined),
+});
 
 type Invite =
   | { invite: 'exists'; uri: string }
@@ -76,12 +83,11 @@ export class ShareUiComponent implements OnInit, OnDestroy {
                   target: {
                     state: 'authorized',
                     invite: e.invite,
-                    user: e.user,
+                    user: normalizeUser(e.user),
                   },
-                  effects:
-                    s.state === 'authorized' && s.invite.invite === 'none'
-                      ? [{ effect: 'initializeForm', user: s.user }]
-                      : [],
+                  effects: [
+                    { effect: 'initializeForm', user: normalizeUser(e.user) },
+                  ],
                 };
               case 'guestOrNotSignedIn':
                 return { target: { state: 'unauthorized' } };
@@ -163,6 +169,7 @@ export class ShareUiComponent implements OnInit, OnDestroy {
         switch (e.effect) {
           case 'initializeForm':
             this.displayNameControl.setValue(e.user.displayName ?? '');
+            this.createInviteForm.reset();
             break;
           case 'displayError':
             // TODO Standardize display style of snackbar messages

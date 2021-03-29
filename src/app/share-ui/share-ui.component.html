@@ -1,8 +1,8 @@
 <div *ngIf="state.state === 'authorized'">
   <div *ngIf="state.invite.invite === 'none'">
-    <p>
+    <!-- <p>
       To share your grocery list with other people, first create an invitation.
-    </p>
+    </p> -->
     <form [formGroup]="createInviteForm" (ngSubmit)="submitForm()">
       <mat-form-field *ngIf="state.user.displayName === undefined">
         <mat-label>Your name</mat-label>
@@ -12,44 +12,46 @@
           type="text"
           required
         />
-        <mat-error>Enter your first name</mat-error>
+        <mat-error>This is required.</mat-error>
       </mat-form-field>
-      <div fxLayoutGap="1rem" fxLayout="row" fxLayoutAlign="start start">
+      <div fxLayoutGap="1rem">
         <button mat-button mat-raised-button color="primary" type="submit">
-          CREATE
+          CREATE INVITATION
         </button>
       </div>
     </form>
   </div>
   <div *ngIf="state.invite.invite === 'exists'">
     <p>
-      To share your grocery list, copy this and email or text it to someone
-      else.
+      Anyone with the link can share your grocery list. Email or text it to
+      people in your home or family.
     </p>
-    <input
-      id="{{ inviteInputId }}"
-      matInput
-      type="url"
-      readonly
-      value="{{ state.invite.uri }}"
-    />
-    <button
-      mat-button
-      mat-raised-button
-      color="primary"
-      (click)="send({ action: 'copyInvite' })"
-    >
-      Copy to clipboard
-    </button>
+    <div fxLayout="row" fxLayoutGap="1rem" fxLayoutAlign="start center">
+      <input
+        id="{{ inviteInputId }}"
+        matInput
+        type="url"
+        readonly
+        value="{{ state.invite.uri }}"
+      />
+      <button
+        mat-button
+        mat-raised-button
+        color="primary"
+        (click)="send({ action: 'copyInvite' })"
+      >
+        COPY LINK
+      </button>
+    </div>
   </div>
   <div *ngIf="state.invite.invite === 'creating'">
-    <mat-progress-bar></mat-progress-bar>
-    <p>Creating an invitation...</p>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>Creating invitation...</p>
   </div>
 </div>
 <div *ngIf="state.state === 'unauthorized'">
   You need to be signed in as a registered user to share your grocery list.
 </div>
 <div *ngIf="state.state === 'loading'">
-  <mat-progress-bar></mat-progress-bar>
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 </div>
