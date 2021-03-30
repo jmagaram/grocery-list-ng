@@ -4,17 +4,21 @@
       To share your grocery list with other people, first create an invitation.
     </p> -->
     <form [formGroup]="createInviteForm" (ngSubmit)="submitForm()">
-      <mat-form-field *ngIf="state.user.displayName === undefined">
+      <mat-form-field
+        style="width: 20em"
+        *ngIf="state.user.displayName === undefined"
+      >
         <mat-label>Your name</mat-label>
         <input
           matInput
+          pattern="^\s*\w{2,}[\w\s]*$"
           [formControl]="displayNameControl"
           type="text"
           required
         />
-        <mat-error>This is required.</mat-error>
+        <mat-error>Only letters and spaces</mat-error>
       </mat-form-field>
-      <div fxLayoutGap="1rem">
+      <div fxLayoutGap="1rem" style="margin-top: 0.25rem">
         <button mat-button mat-raised-button color="primary" type="submit">
           CREATE INVITATION
         </button>
@@ -23,13 +27,14 @@
   </div>
   <div *ngIf="state.invite.invite === 'exists'">
     <p>
-      Anyone with the link can share your grocery list. Email or text it to
+      Anyone with this link can share your grocery list. Email or text it to
       people in your home or family.
     </p>
-    <div fxLayout="row" fxLayoutGap="1rem" fxLayoutAlign="start center">
+    <div fxLayoutGap="1rem">
       <input
         id="{{ inviteInputId }}"
         matInput
+        style="width: 22em"
         type="url"
         readonly
         value="{{ state.invite.uri }}"

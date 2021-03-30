@@ -1,22 +1,19 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ManageInvitationService } from './manage-invitation.service';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { mapString } from '../common/utilities';
 
-type User = { uid: string; displayName?: string };
+export type User = { uid: string; displayName?: string };
 
 // TODO Confusing to use mapString
+// TODO Use 'newtype' instead
 const normalizeUser = (u: User): User => ({
   ...u,
   displayName: mapString(u.displayName, (i) => i, undefined),
 });
 
-type Invite =
+export type Invite =
   | { invite: 'exists'; uri: string }
   | { invite: 'creating' }
   | { invite: 'none' };
@@ -26,7 +23,7 @@ type State =
   | { state: 'unauthorized' }
   | { state: 'authorized'; user: User; invite: Invite };
 
-type Action =
+export type Action =
   | { action: 'guestOrNotSignedIn' }
   | { action: 'authorized'; user: User; invite: Invite }
   | { action: 'copyInvite' }
@@ -52,20 +49,20 @@ type Machine = {
   templateUrl: './share-ui.component.html',
   styleUrls: ['./share-ui.component.scss'],
 })
-export class ShareUiComponent implements OnInit, OnDestroy {
+export class ShareUiComponent {
+  @Output() createInvite = new EventEmitter<Required<User>>();
   readonly inviteInputId = 'inviteInput';
   state: State;
   machine: Machine;
   displayNameControl: FormControl;
   createInviteForm: FormGroup;
-  destroyed: Subject<unknown>;
 
   constructor(
     private readonly snackbar: MatSnackBar,
-    private readonly svc: ManageInvitationService,
     @Inject(DOCUMENT) private document: Document
   ) {
-    this.destroyed = new Subject<unknown>();
+    // TODO Prevent all whitespace
+    // TODO Prevent email address being entered
     this.displayNameControl = new FormControl('', [Validators.required]);
     this.createInviteForm = new FormGroup({
       displayName: this.displayNameControl,
@@ -127,52 +124,26 @@ export class ShareUiComponent implements OnInit, OnDestroy {
     this.state = this.machine.initial;
   }
 
-  ngOnDestroy(): void {
-    this.destroyed.next(true);
-  }
-
-  ngOnInit() {
-    this.svc.invitation$
-      .pipe(takeUntil(this.destroyed))
-      .subscribe(async (i) => {
-        switch (i.state) {
-          case 'guest':
-          case 'notSignedIn':
-            await this.send({ action: 'guestOrNotSignedIn' });
-            break;
-          case 'authorized':
-            await this.send({
-              action: 'authorized',
-              invite: i.inviteUri
-                ? { invite: 'exists', uri: i.inviteUri }
-                : { invite: 'none' },
-              user: i.user,
-            });
-        }
-      });
-  }
-
-  async submitForm() {
+  submitForm() {
     if (this.createInviteForm.valid) {
-      await this.send({
+      this.send({
         action: 'createInvite',
         userDisplayName: this.displayNameControl.value,
       });
     }
   }
 
-  async send(action: Action) {
+  send(action: Action) {
     const result = this.machine.transition(this.state, action);
     if (result !== undefined) {
       this.state = result.target ?? this.state;
-      for (const e of result.effects ?? []) {
+      result.effects?.forEach((e) => {
         switch (e.effect) {
           case 'initializeForm':
-            this.displayNameControl.setValue(e.user.displayName ?? '');
             this.createInviteForm.reset();
+            this.displayNameControl.setValue(e.user.displayName ?? '');
             break;
           case 'displayError':
-            // TODO Standardize display style of snackbar messages
             this.snackbar.open(e.message, 'DISMISS');
             break;
           case 'copyToClipboard':
@@ -184,27 +155,27 @@ export class ShareUiComponent implements OnInit, OnDestroy {
               document.execCommand('copy');
               this.snackbar.open('Copied!', 'DISMISS', { duration: 4000 });
             } else {
-              // TODO Handle this unexpected error.
+              // TODO Handle unexpected error.
             }
             break;
           case 'createInvite':
             try {
-              await this.svc.createInvitation({
+              this.createInvite.next({
                 uid: e.user.uid,
                 displayName: this.displayNameControl.value,
               });
             } catch (error: unknown) {
-              await this.send({
+              this.send({
                 action: 'errorCreatingInvite',
                 error:
                   error instanceof Error
                     ? error.message
-                    : 'Could not create the invitation.', // TODO Handle this
+                    : 'Could not create the invitation.', // TODO Handle error
               });
             }
             break;
         }
-      }
+      });
     }
   }
 }

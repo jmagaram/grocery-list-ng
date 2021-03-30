@@ -1,6 +1,6 @@
 import { NgModule, Provider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { environment } from './../environments/environment';
 import { AngularFireModule } from '@angular/fire';
@@ -37,6 +37,7 @@ import { ScratchpadComponent } from './scratchpad/scratchpad.component';
 import { SignInEmailUiComponent } from './sign-in-email-ui/sign-in-email-ui.component';
 import { ShareUiComponent } from './share-ui/share-ui.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ShareUiTryComponent } from './share-ui-try/share-ui-try.component';
 
 const imports = [
   BrowserModule,
@@ -45,6 +46,7 @@ const imports = [
   AngularFireModule.initializeApp(environment.firebaseConfig),
   AngularFireAuthModule,
   ReactiveFormsModule,
+  FormsModule, // TODO Might only need this in testing
   BrowserAnimationsModule,
   MatButtonModule,
   MatInputModule,
@@ -96,6 +98,7 @@ export const appConfig = { imports, providers };
     SignInEmailUiComponent,
     ScratchpadComponent,
     ShareUiComponent,
+    ShareUiTryComponent,
   ],
   imports: [...imports],
   providers: [...providers],

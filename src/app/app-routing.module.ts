@@ -14,6 +14,7 @@ import { SignInComponent } from './sign-in/sign-in.component';
 import { SignInProcessEmailLinkComponent } from './sign-in-process-email-link/sign-in-process-email-link.component';
 import { ProfileComponent } from './profile/profile.component';
 import { ScratchpadComponent } from './scratchpad/scratchpad.component';
+import { ShareUiTryComponent } from './share-ui-try/share-ui-try.component';
 
 const redirectUnauthenticatedToSignIn = () => redirectUnauthorizedTo('signin');
 
@@ -38,6 +39,7 @@ const routes: Routes = [
     canActivate: [AngularFireAuthGuard],
     data: { authGuardPipe: redirectUnauthenticatedToSignIn },
   },
+  { path: 'try-shareui', component: ShareUiTryComponent },
 ];
 
 @NgModule({
