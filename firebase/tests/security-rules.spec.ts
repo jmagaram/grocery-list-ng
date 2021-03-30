@@ -4,7 +4,7 @@
 
 import * as fs from 'fs';
 import * as http from 'http';
-import { pipe } from 'ramda';
+import { pipe } from 'fp-ts/function';
 import {
   initializeTestApp,
   initializeAdminApp,
@@ -172,10 +172,10 @@ describe('security rules : grocery list', () => {
     tests.forEach((t) => {
       it(`${t.comment}`, async () => {
         const doc = pipe(
-          () => userApp(t.user),
+          userApp(t.user),
           (i) => getCollection(i, groceryListCollection),
           (i) => i.doc(t.doc.id)
-        )();
+        );
         switch (t.expectation) {
           case 'pass':
             await assertSucceeds(doc.set(t.doc));

@@ -29,6 +29,7 @@
     "@angular/platform-browser-dynamic": "~11.2.7",
     "@angular/router": "~11.2.7",
     "firebase": "^8.3.1",
+    "fp-ts": "^2.9.5",
     "fromfrom": "^1.6.0",
     "rxjs": "~6.6.6",
     "tslib": "^2.0.0",
