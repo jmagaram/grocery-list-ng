@@ -16,7 +16,9 @@
   </div>
   <div *ngIf="animals$ | async; let animals; else: loading">
     <ul>
-      <li *ngFor="let a of animals">{{ a.type }} {{ a.color }}</li>
+      <li *ngFor="let a of animals">
+        {{ a.type }} {{ a.color }} <span style="opacity: 0.3">{{ a.id }}</span>
+      </li>
     </ul>
     <div *ngIf="animals.length === 0">No results</div>
   </div>

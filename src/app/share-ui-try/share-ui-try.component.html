@@ -4,19 +4,21 @@
   <button (click)="error()">Error creating invite</button>
 </div>
 <div>
-  <button (click)="authorized(mikeNoDisplayName, noInvitationUri)">
-    mike-uid | NO invite
+  <button (click)="authorized(undefined, noInvitationUri)">
+    NO name | NO invite
   </button>
-  <button (click)="authorized(mike, noInvitationUri)">Mike | NO invite</button>
-  <button (click)="this.authorized(mike, mikeInviteUri)">
+  <button (click)="authorized('mike', noInvitationUri)">
+    Mike | NO invite
+  </button>
+  <button (click)="this.authorized('mike', mikeInviteUri)">
     Mike | has invite
   </button>
-  <button (click)="authorized(mikeNoDisplayName, creatingInvite)">
+  <button (click)="authorized('mike', creatingInvite)">
     Mike | CREATING invite
   </button>
 </div>
 <div>
-  <button (click)="authorized(whitespaceNoDisplayName, noInvitationUri)">
+  <button (click)="authorized('   ', noInvitationUri)">
     Whitespace | NO invite
   </button>
 </div>

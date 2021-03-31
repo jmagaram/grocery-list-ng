@@ -1,11 +1,10 @@
 // Could optimize cold start performance since all these imports are not needed
-// for every function.
-// https://tinyurl.com/ycgflp9z
+// for every function. https://tinyurl.com/ycgflp9z
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { createGroceryList as makeGroceryList } from '../../../src/app/firestore/data-functions';
-import { groceryListCollection } from '../../../src/app/firestore/data-types';
+import { createGroceryList } from '../../../src/app/firestore/data-functions';
+import { CollectionNames } from '../../../src/app/firestore/data.service';
 
 admin.initializeApp();
 admin.firestore().settings({ ignoreUndefinedProperties: true });
@@ -15,7 +14,7 @@ export const deleteGroceryListOnUserDelete = functions.auth
   .onDelete(async (user) => {
     await admin
       .firestore()
-      .collection(groceryListCollection)
+      .collection(CollectionNames.groceryList)
       .doc(user.uid)
       .delete();
   });
@@ -23,18 +22,18 @@ export const deleteGroceryListOnUserDelete = functions.auth
 export const createGroceryListOnUserCreate = functions.auth
   .user()
   .onCreate(async (user) => {
-    let shoppingList = makeGroceryList({
+    let doc = createGroceryList({
+      now: admin.firestore.FieldValue.serverTimestamp(),
       userId: user.uid,
       displayName: user.displayName,
       emailAddress: user.email,
       emailVerified: user.emailVerified,
-      serverTimestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
     await admin
       .firestore()
-      .collection(groceryListCollection)
-      .doc(user.uid)
-      .create(shoppingList);
+      .collection(CollectionNames.groceryList)
+      .doc(doc.id)
+      .create(doc);
   });
 
 type Message = { asTypedByUser: string; uppercased: string | null };

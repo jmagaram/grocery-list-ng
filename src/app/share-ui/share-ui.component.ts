@@ -2,16 +2,9 @@ import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { mapString } from '../common/utilities';
+import { visibleString } from '../common/utilities';
 
 export type User = { uid: string; displayName?: string };
-
-// TODO Confusing to use mapString
-// TODO Use 'newtype' instead
-const normalizeUser = (u: User): User => ({
-  ...u,
-  displayName: mapString(u.displayName, (i) => i, undefined),
-});
 
 export type Invite =
   | { invite: 'exists'; uri: string }
@@ -21,19 +14,19 @@ export type Invite =
 type State =
   | { state: 'loading' }
   | { state: 'unauthorized' }
-  | { state: 'authorized'; user: User; invite: Invite };
+  | { state: 'authorized'; userName?: string; invite: Invite };
 
 export type Action =
   | { action: 'guestOrNotSignedIn' }
-  | { action: 'authorized'; user: User; invite: Invite }
+  | { action: 'authorized'; userName?: string; invite: Invite }
   | { action: 'copyInvite' }
-  | { action: 'createInvite'; userDisplayName: string }
+  | { action: 'createInvite'; userName?: string }
   | { action: 'errorCreatingInvite'; error: string };
 
 type Effect =
   | { effect: 'copyToClipboard' }
-  | { effect: 'initializeForm'; user: User }
-  | { effect: 'createInvite'; user: User }
+  | { effect: 'initializeForm'; userName?: string }
+  | { effect: 'createInvite'; userName?: string }
   | { effect: 'displayError'; message: string };
 
 type Machine = {
@@ -50,7 +43,8 @@ type Machine = {
   styleUrls: ['./share-ui.component.scss'],
 })
 export class ShareUiComponent {
-  @Output() createInvite = new EventEmitter<Required<User>>();
+  // TODO Fix weird type signature here and elsewhere
+  @Output() createInvite = new EventEmitter<{ userName?: string }>();
   readonly inviteInputId = 'inviteInput';
   state: State;
   machine: Machine;
@@ -61,8 +55,6 @@ export class ShareUiComponent {
     private readonly snackbar: MatSnackBar,
     @Inject(DOCUMENT) private document: Document
   ) {
-    // TODO Prevent all whitespace
-    // TODO Prevent email address being entered
     this.displayNameControl = new FormControl('', [Validators.required]);
     this.createInviteForm = new FormGroup({
       displayName: this.displayNameControl,
@@ -80,10 +72,13 @@ export class ShareUiComponent {
                   target: {
                     state: 'authorized',
                     invite: e.invite,
-                    user: normalizeUser(e.user),
+                    userName: visibleString(e.userName),
                   },
                   effects: [
-                    { effect: 'initializeForm', user: normalizeUser(e.user) },
+                    {
+                      effect: 'initializeForm',
+                      userName: e.userName,
+                    },
                   ],
                 };
               case 'guestOrNotSignedIn':
@@ -104,7 +99,7 @@ export class ShareUiComponent {
                       effects: [
                         {
                           effect: 'createInvite',
-                          user: { ...s.user, displayName: e.userDisplayName },
+                          userName: e.userName,
                         },
                       ],
                     }
@@ -128,7 +123,7 @@ export class ShareUiComponent {
     if (this.createInviteForm.valid) {
       this.send({
         action: 'createInvite',
-        userDisplayName: this.displayNameControl.value,
+        userName: this.displayNameControl.value,
       });
     }
   }
@@ -141,7 +136,7 @@ export class ShareUiComponent {
         switch (e.effect) {
           case 'initializeForm':
             this.createInviteForm.reset();
-            this.displayNameControl.setValue(e.user.displayName ?? '');
+            this.displayNameControl.setValue(e.userName ?? '');
             break;
           case 'displayError':
             this.snackbar.open(e.message, 'DISMISS');
@@ -161,8 +156,7 @@ export class ShareUiComponent {
           case 'createInvite':
             try {
               this.createInvite.next({
-                uid: e.user.uid,
-                displayName: this.displayNameControl.value,
+                userName: visibleString(this.displayNameControl.value),
               });
             } catch (error: unknown) {
               this.send({

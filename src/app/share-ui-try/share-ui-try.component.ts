@@ -8,9 +8,8 @@ import { Action, Invite, User } from '../share-ui/share-ui.component';
   styleUrls: ['./share-ui-try.component.scss'],
 })
 export class ShareUiTryComponent implements OnInit {
-  @ViewChild('component')
-  shareUi?: ShareUiComponent;
-  requestedInvite?: Required<User>;
+  @ViewChild('component') shareUi?: ShareUiComponent;
+  requestedInvite?: { userName?: string };
   requestedInviteAsString = '';
   readonly mike: User = { uid: 'mike-uid', displayName: 'Bob' };
   readonly mikeNoDisplayName: User = { ...this.mike, displayName: undefined };
@@ -38,10 +37,10 @@ export class ShareUiTryComponent implements OnInit {
 
   signedIn = (a: Action & { action: 'authorized' }) => this.shareUi?.send(a);
 
-  authorized = (user: User, invite: Invite) =>
-    this.signedIn({ action: 'authorized', user, invite });
+  authorized = (userName: string | undefined, invite: Invite) =>
+    this.signedIn({ action: 'authorized', userName, invite });
 
-  onCreateInvite = (i: Required<User>) => {
+  onCreateInvite = (i: { userName?: string }) => {
     this.requestedInvite = i;
     this.requestedInviteAsString = JSON.stringify(i);
   };

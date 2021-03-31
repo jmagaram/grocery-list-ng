@@ -15,6 +15,7 @@ import { SignInProcessEmailLinkComponent } from './sign-in-process-email-link/si
 import { ProfileComponent } from './profile/profile.component';
 import { ScratchpadComponent } from './scratchpad/scratchpad.component';
 import { ShareUiTryComponent } from './share-ui-try/share-ui-try.component';
+import { MembersComponent } from './members/members.component';
 
 const redirectUnauthenticatedToSignIn = () => redirectUnauthorizedTo('signin');
 
@@ -23,6 +24,7 @@ const routes: Routes = [
   { path: 'experiment', component: ExperimentComponent },
   { path: 'authplayground', component: AuthPlaygroundComponent },
   { path: 'signin', component: SignInComponent },
+  { path: 'members', component: MembersComponent },
   {
     path: 'profile',
     component: ProfileComponent,

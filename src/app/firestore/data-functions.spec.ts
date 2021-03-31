@@ -1,16 +1,16 @@
-import { createPassword } from './data-functions';
+import { invitationPassword } from './data-functions';
 import { assert } from 'chai';
 
 describe('password', () => {
   it('password length is at least 7 characters', () => {
-    const p = createPassword();
+    const p = invitationPassword();
     assert.isAtLeast(p.length, 7);
   });
 
   it('passwords are different', () => {
-    const a = createPassword();
-    const b = createPassword();
-    const c = createPassword();
+    const a = invitationPassword();
+    const b = invitationPassword();
+    const c = invitationPassword();
     assert.notEqual(a, b);
     assert.notEqual(b, c);
     assert.notEqual(a, c);
@@ -46,7 +46,7 @@ describe('password', () => {
 
   const assertDoesNotInclude = (s: string) => {
     for (let i = 0; i < 100; i++) {
-      const password = createPassword();
+      const password = invitationPassword();
       assert.isNotTrue(password.includes(s));
     }
   };

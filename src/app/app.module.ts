@@ -38,6 +38,7 @@ import { SignInEmailUiComponent } from './sign-in-email-ui/sign-in-email-ui.comp
 import { ShareUiComponent } from './share-ui/share-ui.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ShareUiTryComponent } from './share-ui-try/share-ui-try.component';
+import { MembersComponent } from './members/members.component';
 
 const imports = [
   BrowserModule,
@@ -99,6 +100,7 @@ export const appConfig = { imports, providers };
     ScratchpadComponent,
     ShareUiComponent,
     ShareUiTryComponent,
+    MembersComponent,
   ],
   imports: [...imports],
   providers: [...providers],

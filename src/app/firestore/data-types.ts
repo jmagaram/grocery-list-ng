@@ -1,23 +1,21 @@
-export type Uid = string;
 export type GroceryListId = string;
 
-export type DocumentMode = 'read' | 'create' | 'update' | 'merge';
+export type Replace<T, K extends keyof T, V> = {
+  [P in keyof T]: P extends K ? V : T[P];
+};
 
-export type FieldValue = any;
+export type ExcludeId<T> = Omit<T, 'id'>;
 
-export type CollectionName = 'animal' | 'grocerylist' | 'invitation';
-export const groceryListCollection: CollectionName = 'grocerylist';
-export const animalCollection: CollectionName = 'animal';
-export const invitationCollection: CollectionName = 'invitation';
-
+// TODO Belongs in this file?
 export interface Claims {
   memberOf?: GroceryListId;
 }
 
-export interface Animal {
+export type Animal = {
+  id: string;
   type: string;
   color: string;
-}
+};
 
 export type Email = {
   address: string;
@@ -25,32 +23,22 @@ export type Email = {
 };
 
 export type UserToken = {
-  uid: Uid;
+  uid: string;
   name?: string;
   email?: Email;
 };
 
-export interface GroceryList<M extends DocumentMode> {
-  id: Uid;
+export type GroceryList = {
+  id: string; // Owner uid
   version: '1';
-  createdOn: FieldValue | Date;
-  owner: UserToken;
-  members: Record<string, UserToken>;
-  openInvitation?: OpenInvitation<M>;
-}
+  createdOn: Date;
+  owner?: Omit<UserToken, 'uid'>;
+  members: Record<string, Omit<UserToken, 'uid'>>;
+};
 
-export interface OpenInvitation<M extends DocumentMode> {
-  readonly id: M extends 'create' ? undefined : string;
-  readonly version: '1';
-  readonly groceryListId: GroceryListId;
-  readonly createdOn: M extends 'read' ? Date : FieldValue | Date;
-  readonly password: string;
-}
-
-export interface Invitation<M extends DocumentMode> {
-  readonly id: M extends 'create' ? undefined : string;
-  readonly version: '1';
+export interface Invitation {
+  id: string; // password
+  version: '1';
   owner: UserToken;
-  createdOn: M extends 'read' ? Date : FieldValue | Date;
-  password: string;
+  createdOn: Date;
 }

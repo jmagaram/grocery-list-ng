@@ -1,10 +1,11 @@
-// From https://github.com/firebase/quickstart-testing/blob/master/unit-test-security-rules/test/firestore.spec.js
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-/* eslint-disable @typescript-eslint/naming-convention */
+// TODO Figure out why eslint isn't complaining about floating promises on 'assertSucceeds'
+// TODO Previously it seemed I had to delete documents before each test; 'before' wasn't working
 
 import * as fs from 'fs';
 import * as http from 'http';
-import { pipe } from 'fp-ts/function';
+import * as admin from 'firebase-admin';
 import {
   initializeTestApp,
   initializeAdminApp,
@@ -14,18 +15,10 @@ import {
   assertSucceeds,
   firestore,
 } from '@firebase/rules-unit-testing';
-import { before, beforeEach, after, afterEach, describe, it } from 'mocha';
-import {
-  CollectionReference,
-  DocumentData,
-  FirebaseFirestore,
-} from '@firebase/firestore-types';
-import {
-  groceryListCollection,
-  CollectionName,
-  UserToken,
-  GroceryList,
-} from '../../src/app/firestore/data-types';
+import { before, beforeEach, after, describe, it } from 'mocha';
+import { FirebaseFirestore } from '@firebase/firestore-types';
+import { UserToken, Claims } from '../../src/app/firestore/data-types';
+import { CollectionNames } from '../../src/app/firestore/data.service';
 import { createGroceryList } from '../../src/app/firestore/data-functions';
 
 const PROJECT_ID = 'firestore-emulator-tests-project';
@@ -67,7 +60,10 @@ type Auth = {
   email?: string;
   email_verified?: boolean;
   name?: string;
-};
+} & Claims;
+
+const clientNow = () => firestore.FieldValue.serverTimestamp();
+const adminNow = () => admin.firestore.FieldValue.serverTimestamp();
 
 const toUserToken = (auth: Auth): UserToken => {
   if (!auth.uid) {
@@ -99,6 +95,15 @@ const ME: Auth = {
 };
 const ME_TOKEN = toUserToken(ME);
 
+const MY_SPOUSE: Auth = {
+  uid: 'my_spouse_id',
+  name: 'my spouse',
+  email: 'spouse@google.com',
+  email_verified: true,
+  memberOf: ME.uid,
+};
+const MY_SPOUSE_TOKEN = toUserToken(MY_SPOUSE);
+
 const SOMEONE_ELSE: Auth = {
   uid: 'someone_else_id',
   name: 'someone_else',
@@ -129,62 +134,51 @@ const userApp = (auth: Auth | undefined): FirebaseFirestore =>
 const adminApp = (): FirebaseFirestore =>
   initializeAdminApp({ projectId: PROJECT_ID }).firestore();
 
-const getCollection = (
-  fb: FirebaseFirestore,
-  c: CollectionName
-): CollectionReference<DocumentData> => fb.collection(c);
+describe('security rules : grocerylist', () => {
+  const createList = <NOW>(u: UserToken, now: NOW) =>
+    createGroceryList({
+      now,
+      displayName: u.name,
+      emailAddress: u.email?.address,
+      emailVerified: u.email?.verified ?? false,
+      userId: u.uid,
+    });
 
-describe('security rules : grocery list', () => {
-  describe('create', () => {
-    interface TestData {
-      comment: string;
-      user: Auth | undefined;
-      doc: GroceryList<'create'>;
-      expectation: TestResult;
-    }
+  describe('read', () => {
+    it('can read if owner', async () => {
+      const doc = createList(ME_TOKEN, adminNow());
+      await adminApp()
+        .collection(CollectionNames.groceryList)
+        .doc(doc.id)
+        .set(doc);
+      const client = userApp(ME);
+      await assertSucceeds(
+        client.collection(CollectionNames.groceryList).doc(ME_TOKEN.uid).get()
+      );
+    });
 
-    const createGroceryListFromToken = (
-      token: UserToken
-    ): GroceryList<'create'> =>
-      createGroceryList({
-        userId: token.uid,
-        displayName: token.name,
-        emailAddress: token.email?.address,
-        emailVerified: token.email === undefined ? false : token.email.verified,
-        serverTimestamp: firestore.FieldValue.serverTimestamp(),
-      });
+    it('can read if member', async () => {
+      const doc = createList(ME_TOKEN, adminNow());
+      await adminApp()
+        .collection(CollectionNames.groceryList)
+        .doc(doc.id)
+        .set(doc);
+      const client = userApp(MY_SPOUSE);
+      await assertSucceeds(
+        client.collection(CollectionNames.groceryList).doc(ME.uid).get()
+      );
+    });
 
-    const tests: TestData[] = [
-      {
-        comment: 'id : allow if id == user id',
-        user: ME,
-        doc: createGroceryListFromToken(ME_TOKEN),
-        expectation: 'pass',
-      },
-      {
-        comment: 'id : deny if id != user id',
-        user: ME,
-        doc: createGroceryListFromToken(SOMEONE_ELSE_TOKEN),
-        expectation: 'fail',
-      },
-    ];
-
-    tests.forEach((t) => {
-      it(`${t.comment}`, async () => {
-        const doc = pipe(
-          userApp(t.user),
-          (i) => getCollection(i, groceryListCollection),
-          (i) => i.doc(t.doc.id)
-        );
-        switch (t.expectation) {
-          case 'pass':
-            await assertSucceeds(doc.set(t.doc));
-            break;
-          case 'fail':
-            await assertFails(doc.set(t.doc));
-            break;
-        }
-      });
+    it('can not read if not owner or member', async () => {
+      const doc = createList(ME_TOKEN, adminNow());
+      await adminApp()
+        .collection(CollectionNames.groceryList)
+        .doc(doc.id)
+        .set(doc);
+      const client = userApp(SOMEONE_ELSE);
+      await assertFails(
+        client.collection(CollectionNames.groceryList).doc(ME.uid).get()
+      );
     });
   });
 });

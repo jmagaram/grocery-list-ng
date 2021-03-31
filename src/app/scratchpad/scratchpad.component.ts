@@ -15,8 +15,7 @@ import { SignInEmailUiComponent } from '../sign-in-email-ui/sign-in-email-ui.com
   styleUrls: ['./scratchpad.component.scss'],
 })
 export class ScratchpadComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('signin')
-  signInControl?: SignInEmailUiComponent;
+  @ViewChild('signin') signInControl?: SignInEmailUiComponent;
   destroyed: Subject<unknown>;
 
   constructor() {

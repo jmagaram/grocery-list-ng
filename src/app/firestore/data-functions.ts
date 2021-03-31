@@ -1,58 +1,39 @@
-import { from } from 'fromfrom';
-import { mapString, range } from '../common/utilities';
-import {
-  FieldValue,
-  GroceryList,
-  Invitation,
-  Uid,
-  UserToken,
-} from './data-types';
+import { mapString, visibleString } from '../common/utilities';
+import { GroceryList, Replace } from './data-types';
 
-export const createGroceryList = (i: {
-  userId: Uid;
-  displayName?: string | null;
-  emailAddress?: string | null;
+export const createGroceryList = <NOW>(i: {
+  now: NOW;
+  userId: string;
+  displayName: string | null | undefined;
+  emailAddress: string | null | undefined;
   emailVerified: boolean;
-  serverTimestamp: FieldValue;
-}): GroceryList<'create'> => {
-  const result: GroceryList<'create'> = {
-    version: '1',
-    id: i.userId,
-    owner: {
-      name: mapString(i.displayName, (j) => j, undefined),
-      uid: i.userId,
-      email: mapString(
-        i.emailAddress,
-        (j) => ({ address: j, verified: i.emailVerified }),
-        undefined
-      ),
-    },
-    createdOn: i.serverTimestamp,
-    members: {},
-  };
-  return result;
-};
+}): Replace<GroceryList, 'createdOn', NOW> => ({
+  id: i.userId,
+  createdOn: i.now,
+  version: '1',
+  members: {},
+  owner: {
+    name: visibleString(i.displayName),
+    email: mapString(
+      i.emailAddress,
+      (j) => ({ address: j, verified: i.emailVerified }),
+      undefined
+    ),
+  },
+});
 
-export const createPassword = () => {
-  const randomCharacter = () => {
-    const characters = 'abcdefghjkmnpqrstuvwxyz23456789';
+export const invitationPassword = () => {
+  const randomChar = () => {
+    const letters = 'abcdefghjkmnpqrstuvwxyz';
+    const numbers = '23456789';
+    const characters = `${letters}${letters.toUpperCase()}${numbers}`;
     const index = Math.trunc((Math.random() * 1000) % characters.length);
     return characters[index];
   };
   const randomString = (length: number) =>
-    from(range(1, length))
-      .map((_) => randomCharacter())
-      .reduce((s, total) => s + total, '');
+    new Array<undefined>(length)
+      .fill(undefined)
+      .map((_) => randomChar())
+      .reduce((total, i) => total + i, '');
   return `${randomString(3)}-${randomString(4)}`;
 };
-
-export const createInvitation = (
-  owner: UserToken,
-  serverTimestamp: FieldValue
-): Invitation<'create'> => ({
-  id: undefined,
-  createdOn: serverTimestamp,
-  version: '1',
-  owner,
-  password: createPassword(),
-});

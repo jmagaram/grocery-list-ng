@@ -1,13 +1,10 @@
 <div *ngIf="state.state === 'authorized'">
   <div *ngIf="state.invite.invite === 'none'">
-    <!-- <p>
+    <p>
       To share your grocery list with other people, first create an invitation.
-    </p> -->
+    </p>
     <form [formGroup]="createInviteForm" (ngSubmit)="submitForm()">
-      <mat-form-field
-        style="width: 20em"
-        *ngIf="state.user.displayName === undefined"
-      >
+      <mat-form-field style="width: 20em" *ngIf="state.userName === undefined">
         <mat-label>Your name</mat-label>
         <input
           matInput

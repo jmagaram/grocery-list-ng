@@ -53,8 +53,7 @@ export class SignInEmailUiComponent implements OnInit {
   @Output() sendLinkRequest: EventEmitter<string>;
   @Output() anonymousSigninRequest: EventEmitter<unknown>;
   @Input() invited: boolean;
-  @ViewChild('errordialog')
-  errorDialogTemplate?: TemplateRef<any>;
+  @ViewChild('errordialog') errorDialogTemplate?: TemplateRef<any>;
   errorDialogRef?: MatDialogRef<any, any>;
   emailControl: FormControl;
   emailForm: FormGroup;
