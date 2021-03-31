@@ -6,6 +6,7 @@ import {
   timeout,
   filterMap,
   exists,
+  visibleString,
 } from './utilities';
 
 describe('other utilities', () => {
@@ -89,18 +90,23 @@ describe('string utilities', () => {
     it('undefined -> true', () => {
       expect(isNullUndefinedOrWhitespace(undefined)).toBeTrue();
     });
+
     it('null -> true', () => {
       expect(isNullUndefinedOrWhitespace(null)).toBeTrue();
     });
+
     it('whitespace -> true', () => {
       expect(isNullUndefinedOrWhitespace('     ')).toBeTrue();
     });
+
     it('empty -> true', () => {
       expect(isNullUndefinedOrWhitespace('')).toBeTrue();
     });
+
     it('untrimmed regular string -> false', () => {
       expect(isNullUndefinedOrWhitespace('  abc  ')).toBeFalse();
     });
+
     it('trimmed regular string -> false', () => {
       expect(isNullUndefinedOrWhitespace('abc')).toBeFalse();
     });
@@ -110,20 +116,51 @@ describe('string utilities', () => {
     it('undefined -> if missing', () => {
       expect(mapString(undefined, (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
+
     it('null -> if missing', () => {
       expect(mapString(null, (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
+
     it('whitespace -> if missing', () => {
       expect(mapString('    ', (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
+
     it('empty -> if missing', () => {
       expect(mapString('', (i) => i.toUpperCase(), -1)).toEqual(-1);
     });
+
     it('untrimmed regular string -> map', () => {
       expect(mapString('   abc  ', (i) => i.toUpperCase(), -1)).toEqual('ABC');
     });
+
     it('trimmed regular string -> map', () => {
       expect(mapString('abc', (i) => i.toUpperCase(), -1)).toEqual('ABC');
+    });
+  });
+
+  describe('visibleString', () => {
+    it('undefined -> undefined', () => {
+      expect(visibleString(undefined)).toBeUndefined();
+    });
+
+    it('whitespace -> undefined', () => {
+      expect(visibleString('   ')).toBeUndefined();
+    });
+
+    it('empty -> undefined', () => {
+      expect(visibleString('')).toBeUndefined();
+    });
+
+    it('null -> undefined', () => {
+      expect(visibleString(null)).toBeUndefined();
+    });
+
+    it('string with padding -> string without padding', () => {
+      expect(visibleString('   ab c   ')).toEqual('ab c');
+    });
+
+    it('string without padding -> original string', () => {
+      expect(visibleString('abc')).toEqual('abc');
     });
   });
 });
