@@ -1,5 +1,6 @@
 import { mapString, visibleString } from '../common/utilities';
 import { GroceryList, Replace } from './data-types';
+import { map, pipe, range, stringFrom } from 'iter-tools';
 
 export const createGroceryList = <NOW>(i: {
   now: NOW;
@@ -31,9 +32,9 @@ export const invitationPassword = () => {
     return characters[index];
   };
   const randomString = (length: number) =>
-    new Array<undefined>(length)
-      .fill(undefined)
-      .map((_) => randomChar())
-      .reduce((total, i) => total + i, '');
+    pipe(
+      map((i) => randomChar()),
+      stringFrom
+    )(range(length));
   return `${randomString(3)}-${randomString(4)}`;
 };
