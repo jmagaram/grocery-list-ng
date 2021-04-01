@@ -20,6 +20,9 @@
     "skipLibCheck": true // Had to add this or else lots of errors
   },
   "angularCompilerOptions": {
-    "strictTemplates": true // To stop ALS from complaining
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
   }
 }
