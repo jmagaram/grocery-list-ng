@@ -16,16 +16,17 @@ export class AuthPlaygroundComponent implements OnInit {
   }
 
   ngOnInit(): void {}
-  login() {
+
+  async login() {
     const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
-    this.auth.signInWithPopup(googleAuthProvider);
+    await this.auth.signInWithPopup(googleAuthProvider);
 
     // const emailAuthProvider = new firebase.auth.EmailAuthProvider();
     // this.auth.createUserWithEmailAndPassword("amy@magaram.com","testing");
     // this.auth.signInWithEmailAndPassword('amy@magaram.com', 'testing');
   }
 
-  logout() {
-    this.auth.signOut();
+  async logout() {
+    await this.auth.signOut();
   }
 }
