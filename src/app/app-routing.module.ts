@@ -16,11 +16,13 @@ import { ProfileComponent } from './profile/profile.component';
 import { ScratchpadComponent } from './scratchpad/scratchpad.component';
 import { ShareUiTryComponent } from './share-ui-try/share-ui-try.component';
 import { MembersComponent } from './members/members.component';
+import { EmulatorUtilityComponent } from './emulator-utility/emulator-utility.component';
 
 const redirectUnauthenticatedToSignIn = () => redirectUnauthorizedTo('signin');
 
 const routes: Routes = [
   { path: 'scratchpad', component: ScratchpadComponent },
+  { path: 'emulator', component: EmulatorUtilityComponent },
   { path: 'experiment', component: ExperimentComponent },
   { path: 'authplayground', component: AuthPlaygroundComponent },
   { path: 'signin', component: SignInComponent },

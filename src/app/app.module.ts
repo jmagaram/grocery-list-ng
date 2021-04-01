@@ -39,6 +39,7 @@ import { ShareUiComponent } from './share-ui/share-ui.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ShareUiTryComponent } from './share-ui-try/share-ui-try.component';
 import { MembersComponent } from './members/members.component';
+import { EmulatorUtilityComponent } from './emulator-utility/emulator-utility.component';
 
 const imports = [
   BrowserModule,
@@ -69,14 +70,8 @@ const imports = [
 // https://tinyurl.com/y4d4o2yk
 const emulatorProviders: Provider[] = environment.useEmulators
   ? [
-      {
-        provide: USE_AUTH_EMULATOR,
-        useValue: ['localhost', 9099],
-      },
-      {
-        provide: USE_FIRESTORE_EMULATOR,
-        useValue: ['localhost', 8080],
-      },
+      { provide: USE_AUTH_EMULATOR, useValue: ['localhost', 9099] },
+      { provide: USE_FIRESTORE_EMULATOR, useValue: ['localhost', 8080] },
     ]
   : [];
 
@@ -101,6 +96,7 @@ export const appConfig = { imports, providers };
     ShareUiComponent,
     ShareUiTryComponent,
     MembersComponent,
+    EmulatorUtilityComponent,
   ],
   imports: [...imports],
   providers: [...providers],

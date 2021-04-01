@@ -11,6 +11,7 @@ export type User =
     };
 
 // TODO Remove this code from production builds
+// TODO Determine if this could work against real firebase server; don't want an accident
 @Injectable({
   providedIn: 'root',
 })
