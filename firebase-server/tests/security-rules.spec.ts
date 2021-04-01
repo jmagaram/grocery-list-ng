@@ -26,7 +26,7 @@ const PROJECT_ID = 'firestore-emulator-tests-project';
 before(async () => {
   // Required to load rules when not using default project
   // https://github.com/firebase/firebase-tools/issues/2612
-  const rulesPath = './firebase/firestore/firestore.rules';
+  const rulesPath = './firebase-server/firestore/firestore.rules';
   const rules = fs.readFileSync(rulesPath, 'utf8');
   await loadFirestoreRules({ projectId: PROJECT_ID, rules });
 });
