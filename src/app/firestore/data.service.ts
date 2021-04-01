@@ -85,6 +85,7 @@ export class DataQueriesService {
       .collection<Animal>(CollectionNames.animals)
       .valueChanges({ idField: 'id' });
 
+  // TODO Somehow the ID field is not being properly retrieved
   ownedInvitations = (): Observable<OwnedInvitations> => {
     const notAuthenticated: OwnedInvitations = { auth: 'notAuthenticated' };
     const anonymous: OwnedInvitations = { auth: 'anonymous' };
