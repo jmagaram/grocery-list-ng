@@ -25,7 +25,7 @@ export const createGroceryList = <NOW>(i: {
 
 export const invitationPassword = () => {
   const randomChar = () => {
-    const letters = 'abcdefghjkmnpqrstuvwxyz';
+    const letters = 'abcdeghjkmnpqrsuvwxyz';
     const numbers = '23456789';
     const characters = `${letters}${letters.toUpperCase()}${numbers}`;
     const index = Math.trunc((Math.random() * 1000) % characters.length);
