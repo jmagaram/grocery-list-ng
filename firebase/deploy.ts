@@ -7,6 +7,7 @@ import { prompt, ConfirmQuestion, InputQuestion, ListQuestion } from 'inquirer';
 const exec = (command: string): Buffer =>
   execSync(command, { stdio: 'inherit' });
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
   const buildQuestion: ConfirmQuestion = {
     type: 'confirm',
