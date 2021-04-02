@@ -10,5 +10,11 @@
     "target": "es2017",
     "skipLibCheck": true // errors about ramda, jasmine, etc. https://tinyurl.com/ycpl2ovy
   },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
   "include": ["src"]
 }
