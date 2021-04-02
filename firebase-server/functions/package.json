@@ -14,7 +14,7 @@
   "engines": {
     "node": "12"
   },
-  "main": "lib/firebase/functions/src/functions.js",
+  "main": "lib/firebase-server/functions/src/functions.js",
   "dependencies": {
     "firebase-admin": "^9.2.0",
     "firebase-functions": "^3.13.2"
