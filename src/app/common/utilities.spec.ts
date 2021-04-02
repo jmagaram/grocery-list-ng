@@ -10,14 +10,6 @@ import {
 } from './utilities';
 
 describe('other utilities', () => {
-  it('timeout - return result after expected delay', async () => {
-    const start = Date.now();
-    const delayMilliseconds = 3000;
-    await timeout(delayMilliseconds, 'abc');
-    const end = Date.now();
-    expect(end - start).toBeCloseTo(delayMilliseconds, -2);
-  });
-
   it('timeout - return the value', async () => {
     const result = await timeout(200, 'abc');
     expect(result).toEqual('abc');
