@@ -10,7 +10,7 @@
 /* eslint-disable max-len */
 import { readFileSync, writeFileSync } from 'fs';
 
-const inputFile = './lib/firebase/firestore/security-rules.js';
+const inputFile = './lib/firebase-server/firestore/security-rules.js';
 const outputFile = 'firestore.rules';
 const content = readFileSync(inputFile, 'utf8');
 
