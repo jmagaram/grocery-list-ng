@@ -1,19 +1,18 @@
 import { invitationPassword } from './data-functions';
-import { assert } from 'chai';
 
 describe('password', () => {
   it('password length is at least 7 characters', () => {
     const p = invitationPassword();
-    assert.isAtLeast(p.length, 7);
+    expect(p.length).toBeGreaterThanOrEqual(7);
   });
 
   it('passwords are different', () => {
     const a = invitationPassword();
     const b = invitationPassword();
     const c = invitationPassword();
-    assert.notEqual(a, b);
-    assert.notEqual(b, c);
-    assert.notEqual(a, c);
+    expect(a).not.toEqual(b);
+    expect(b).not.toEqual(c);
+    expect(a).not.toEqual(c);
   });
 
   it('password never has letter i', () => {
@@ -47,7 +46,7 @@ describe('password', () => {
   const assertDoesNotInclude = (s: string) => {
     for (let i = 0; i < 100; i++) {
       const password = invitationPassword();
-      assert.isNotTrue(password.includes(s));
+      expect(password.includes(s)).toBeFalse();
     }
   };
 });
