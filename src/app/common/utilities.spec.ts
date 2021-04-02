@@ -12,7 +12,7 @@ import {
 describe('other utilities', () => {
   it('timeout - return result after expected delay', async () => {
     const start = Date.now();
-    const delayMilliseconds = 1000;
+    const delayMilliseconds = 3000;
     await timeout(delayMilliseconds, 'abc');
     const end = Date.now();
     expect(end - start).toBeCloseTo(delayMilliseconds, -2);
