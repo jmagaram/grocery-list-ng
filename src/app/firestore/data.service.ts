@@ -158,6 +158,9 @@ export class DataCommandsService {
         name: visibleString(user.displayName),
       },
     };
-    await this.fs.collection<Doc>(CollectionNames.invitations).add(inv);
+    await this.fs
+      .collection<Doc>(CollectionNames.invitations)
+      .doc(inv.id)
+      .set(inv);
   };
 }
