@@ -13,6 +13,10 @@ import {
   AngularFireAuthModule,
   USE_EMULATOR as USE_AUTH_EMULATOR,
 } from '@angular/fire/auth';
+import {
+  AngularFireFunctionsModule,
+  USE_EMULATOR as USE_FUNCTIONS_EMULATOR,
+} from '@angular/fire/functions';
 import { AppComponent } from './app.component';
 import { ExperimentComponent } from './experiment/experiment.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -44,9 +48,10 @@ import { EmulatorUtilityComponent } from './emulator-utility/emulator-utility.co
 const imports = [
   BrowserModule,
   AppRoutingModule,
-  AngularFirestoreModule,
   AngularFireModule.initializeApp(environment.firebaseConfig),
+  AngularFirestoreModule,
   AngularFireAuthModule,
+  AngularFireFunctionsModule,
   ReactiveFormsModule,
   FormsModule, // TODO Might only need this in testing
   BrowserAnimationsModule,
@@ -72,6 +77,10 @@ const emulatorProviders: Provider[] = environment.useEmulators
   ? [
       { provide: USE_AUTH_EMULATOR, useValue: ['localhost', 9099] },
       { provide: USE_FIRESTORE_EMULATOR, useValue: ['localhost', 8080] },
+      {
+        provide: USE_FUNCTIONS_EMULATOR,
+        useValue: ['localhost', 5001],
+      },
     ]
   : [];
 
