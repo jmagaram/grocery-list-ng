@@ -9,25 +9,3 @@ This project contains code for an online grocery list. Having come from a .NET/W
 I'm using **Angular**. I love the functional nature of React but my first priority was a super solid pixel-perfect UI and wanted to use the official Google Angular Material UI components. I also like that Angular provides everything you need in one box and the documentation is pretty good.
 
 I need offline data sync and decided to try **Firebase**. I experimented with AWS Amplify but had a few build problems integrating with Angular. Also Amplify doesn't make it easy (or possible) to provide flexible consumer-based authorization rules.
-
-## Experience log
-
-I'll keep a running log of comments about what I'm enjoying and finding frustrating as I build this web app.
-
-### Hassles
-
-Angular is quite verbose. A single component gets split into 3 files.
-
-Couldn't test firebase security rules using the default Karma Jasmine testing framework; still don't know why. Had a lot of hassles attempting to get this working with Mocha and Chai, especially since the firebase SDK examples are in javascript not Typescript.
-
-### Good stuff
-
-Angular provides everything I will probably need.
-
-Really good Angular documentation.
-
-One-click "preview" sends current build to Firebase with a special preview URL so you can experiment with it before deciding to publish.
-
-Local emulator and testing tools to fake authentication and make super simple unit tests for building security rules. Really well thought through.
-
-Firebase authorization rules are super flexible.
