@@ -4,8 +4,9 @@
 // playground to see the end result. https://www.typescriptlang.org/play
 // ===========================================================================
 
+/* eslint-disable no-inner-declarations */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-const */
-/* eslint-disable prefer-arrow/prefer-arrow-functions */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable no-shadow */

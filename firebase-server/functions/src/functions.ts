@@ -5,7 +5,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { createGroceryList } from '../../../src/app/firestore/data-functions';
-import { CollectionNames } from '../../../src/app/firestore/data.service';
+import { Collections } from '../../../src/app/firestore/data.service';
 import {
   Invitation,
   InvitationDetails,
@@ -32,7 +32,7 @@ export const getInvitationDetails = functions.https.onCall(
     }
     const invitationDoc = await admin
       .firestore()
-      .collection(CollectionNames.invitations)
+      .collection(Collections.invitations)
       .doc(data)
       .get();
     if (!invitationDoc.exists) {
@@ -44,8 +44,8 @@ export const getInvitationDetails = functions.https.onCall(
     const invitation = invitationDoc.data() as Invitation;
     const groceryLists = await admin
       .firestore()
-      .collection(CollectionNames.groceryList)
-      .where('id', '==', `${invitation.owner.uid}`)
+      .collection(Collections.groceryList)
+      .where('id', '==', `${invitation.owner}`)
       .limit(1)
       .get();
     if (groceryLists.docs.length === 0) {
@@ -73,7 +73,7 @@ export const deleteGroceryListOnUserDelete = functions.auth
   .onDelete(async (user) => {
     await admin
       .firestore()
-      .collection(CollectionNames.groceryList)
+      .collection(Collections.groceryList)
       .doc(user.uid)
       .delete();
   });
@@ -90,43 +90,7 @@ export const createGroceryListOnUserCreate = functions.auth
     });
     await admin
       .firestore()
-      .collection(CollectionNames.groceryList)
+      .collection(Collections.groceryList)
       .doc(doc.id)
-      .create(doc);
-  });
-
-type Message = { asTypedByUser: string; uppercased: string | null };
-
-export const createUser = functions.https.onRequest(async (req, response) => {
-  let userName: string = req.query.name as string;
-  await admin.auth().createUser({
-    displayName: userName,
-  });
-  response.send('Success!');
-});
-
-export const addMessage = functions.https.onRequest(async (req, res) => {
-  let message: Message = {
-    asTypedByUser: req.query.text as string,
-    uppercased: null,
-  };
-  const writeResult = await admin
-    .firestore()
-    .collection('messages')
-    .add(message);
-  res.json({ result: `Message with ID: ${writeResult.id} added.` });
-});
-
-export const makeUppercase = functions.firestore
-  .document('/messages/{documentId}')
-  .onWrite((snap, context) => {
-    const before = snap.before.data() as Message | undefined;
-    const after = snap.after.data() as Message;
-    if (before == undefined || before.asTypedByUser != after.asTypedByUser) {
-      after.uppercased = after.asTypedByUser.toUpperCase();
-      functions.logger.log('UPPERCASING log', context.params.documentId, after);
-      return snap.after.ref.set(after);
-    } else {
-      return Promise.resolve();
-    }
+      .create({ ...doc, id: undefined });
   });

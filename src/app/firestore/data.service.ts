@@ -8,7 +8,7 @@ import { map, switchMap } from 'rxjs/operators';
 import { Observable, of as obsOf } from 'rxjs';
 import { invitationPassword } from './data-functions';
 
-export enum CollectionNames {
+export enum Collections {
   animals = 'animal',
   invitations = 'invitation',
   groceryList = 'grocerylist',
@@ -82,9 +82,10 @@ export class DataQueriesService {
 
   allAnimals = () =>
     this.fs
-      .collection<Animal>(CollectionNames.animals)
+      .collection<Animal>(Collections.animals)
       .valueChanges({ idField: 'id' });
 
+  // TODO This is not working reliably
   ownedInvitations = (): Observable<OwnedInvitations> => {
     const notAuthenticated: OwnedInvitations = { auth: 'notAuthenticated' };
 
@@ -103,19 +104,19 @@ export class DataQueriesService {
     });
 
     return this.auth.currentUser().pipe(
-      switchMap((u) => {
-        switch (u.auth) {
+      switchMap((user) => {
+        switch (user.auth) {
           case 'anonymous':
             return obsOf(anonymous);
           case 'notAuthenticated':
             return obsOf(notAuthenticated);
           case 'registered':
             return this.fs
-              .collection<Invitation>(CollectionNames.invitations, (ref) =>
-                ref.where('owner.uid', '==', u.uid)
+              .collection<Invitation>(Collections.invitations, (ref) =>
+                ref.where('owner', '==', user.uid)
               )
               .valueChanges({ idField: 'id' })
-              .pipe(map((inv) => registered(u, inv)));
+              .pipe(map((inv) => registered(user, inv)));
         }
       })
     );
@@ -133,10 +134,17 @@ export class DataCommandsService {
 
   createAnimal = async (animal: ExcludeId<Animal>) => {
     await this.fs
-      .collection<Omit<Animal, 'id'>>(CollectionNames.animals)
+      .collection<Omit<Animal, 'id'>>(Collections.animals)
       .add(animal);
   };
 
+  /**
+   * Creates an invitation to share a grocery list.
+   *
+   * @param userName - If provided, updates the current user's profile display
+   * name so when someone views the invitation they can see the name of the
+   * person who invited them.
+   */
   createInvitation = async (userName?: string) => {
     const user = await this.auth.currentUser;
     if (user === null) {
@@ -148,24 +156,16 @@ export class DataCommandsService {
       });
       await user.getIdToken(true);
     }
-    type Doc = Replace<Invitation, 'createdOn', FieldValue>;
+    type Doc = ExcludeId<Replace<Invitation, 'createdOn', FieldValue>>;
+    const password = invitationPassword();
     const inv: Doc = {
-      id: invitationPassword(),
       version: '1',
       createdOn: serverTimestamp(),
-      owner: {
-        uid: user.uid,
-        email: mapString(
-          user.email,
-          (e) => ({ address: e, verified: user.emailVerified }),
-          undefined
-        ),
-        name: visibleString(user.displayName),
-      },
+      owner: user.uid,
     };
     await this.fs
-      .collection<Doc>(CollectionNames.invitations)
-      .doc(inv.id)
+      .collection<Doc>(Collections.invitations)
+      .doc(password)
       .set(inv);
   };
 }

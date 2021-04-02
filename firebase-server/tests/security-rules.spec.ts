@@ -18,7 +18,7 @@ import {
 import { before, beforeEach, after, describe, it } from 'mocha';
 import { FirebaseFirestore } from '@firebase/firestore-types';
 import { UserToken, Claims } from '../../src/app/firestore/data-types';
-import { CollectionNames } from '../../src/app/firestore/data.service';
+import { Collections } from '../../src/app/firestore/data.service';
 import { createGroceryList } from '../../src/app/firestore/data-functions';
 
 const PROJECT_ID = 'firestore-emulator-tests-project';
@@ -147,37 +147,28 @@ describe('security rules : grocerylist', () => {
   describe('read', () => {
     it('can read if owner', async () => {
       const doc = createList(ME_TOKEN, adminNow());
-      await adminApp()
-        .collection(CollectionNames.groceryList)
-        .doc(doc.id)
-        .set(doc);
+      await adminApp().collection(Collections.groceryList).doc(doc.id).set(doc);
       const client = userApp(ME);
       await assertSucceeds(
-        client.collection(CollectionNames.groceryList).doc(ME_TOKEN.uid).get()
+        client.collection(Collections.groceryList).doc(ME_TOKEN.uid).get()
       );
     });
 
     it('can read if member', async () => {
       const doc = createList(ME_TOKEN, adminNow());
-      await adminApp()
-        .collection(CollectionNames.groceryList)
-        .doc(doc.id)
-        .set(doc);
+      await adminApp().collection(Collections.groceryList).doc(doc.id).set(doc);
       const client = userApp(MY_SPOUSE);
       await assertSucceeds(
-        client.collection(CollectionNames.groceryList).doc(ME.uid).get()
+        client.collection(Collections.groceryList).doc(ME.uid).get()
       );
     });
 
     it('can not read if not owner or member', async () => {
       const doc = createList(ME_TOKEN, adminNow());
-      await adminApp()
-        .collection(CollectionNames.groceryList)
-        .doc(doc.id)
-        .set(doc);
+      await adminApp().collection(Collections.groceryList).doc(doc.id).set(doc);
       const client = userApp(SOMEONE_ELSE);
       await assertFails(
-        client.collection(CollectionNames.groceryList).doc(ME.uid).get()
+        client.collection(Collections.groceryList).doc(ME.uid).get()
       );
     });
   });

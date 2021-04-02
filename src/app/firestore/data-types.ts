@@ -36,13 +36,12 @@ export type GroceryList = {
   members: Record<string, Omit<UserToken, 'uid'>>;
 };
 
-// TODO Switch to dumb invitation document with no data duplication
 // TODO Ensure no list permissions
 export interface Invitation {
-  id: string; // password
-  version: '1';
-  owner: UserToken;
+  id: string; // Must be unique within firestore
+  owner: string;
   createdOn: Date;
+  version: '1';
 }
 
 export type InvitationDetails = {

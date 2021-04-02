@@ -7,8 +7,8 @@ match /animal/{id} {
 }
 match /grocerylist/{id} {
     function isOwnerOrMember (request, resource) {
-        let isOwner = request.auth.uid == resource.data.id;
-        let isMember = request.auth.token.memberOf == resource.data.id;
+        let isOwner = request.auth.uid == resource.id;
+        let isMember = request.auth.token.memberOf == resource.id;
         return isOwner || isMember;
     }
     allow create: if false; 
@@ -19,18 +19,12 @@ match /grocerylist/{id} {
 match /invitation/{invitationId} {
 // TODO Validate password
     allow create: if request.auth != null &&
-            request.resource.data.owner.uid == request.auth.uid &&
+            request.resource.data.owner == request.auth.uid &&
             request.resource.data.version == '1' &&
-            request.resource.data.createdOn == request.time &&
-            request.resource.data.get(["owner", "email", "address"], -1) ==
-                request.auth.get(["token", "email"], -1) &&
-            request.resource.data.get(["owner", "email", "verified"], -1) ==
-                request.auth.get(["token", "email_verified"], -1) &&
-            request.resource.data.get(["owner", "name"], -1) ==
-                request.auth.get(["token", "name"], -1);
+            request.resource.data.createdOn == request.time;
     allow update: if false; 
-    allow delete: if request.auth.uid == resource.data.owner.uid;
-    allow list: if request.auth.uid == resource.data.owner.uid;
+    allow delete: if request.auth.uid == resource.data.owner;
+    allow list: if request.auth.uid == resource.data.owner;
     allow get: if request.auth != null &&
             request.auth.token.firebase.sign_in_provider != 'anonymous';
 }

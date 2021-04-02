@@ -37,3 +37,5 @@ See https://firebase.google.com/support/release-notes/js#version_800_-_october_2
 Use: `import firebase from 'firebase/app'`
 
 **Standardize display of snackbar messages** #TODO
+
+**Ensure not duplicating id field in both document and meta data in firestore** #TODO
