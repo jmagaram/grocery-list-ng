@@ -29,7 +29,7 @@ type User =
       email?: { address: string; verified: boolean };
     };
 
-type OwnedInvitations =
+export type OwnedInvitations =
   | { auth: 'notAuthenticated' }
   | { auth: 'anonymous' }
   | {
@@ -85,18 +85,23 @@ export class DataQueriesService {
       .collection<Animal>(CollectionNames.animals)
       .valueChanges({ idField: 'id' });
 
-  // TODO Somehow the ID field is not being properly retrieved
   ownedInvitations = (): Observable<OwnedInvitations> => {
     const notAuthenticated: OwnedInvitations = { auth: 'notAuthenticated' };
+
     const anonymous: OwnedInvitations = { auth: 'anonymous' };
+
     const registered = (
       user: User & { auth: 'registered' },
       inv: Invitation[]
     ): OwnedInvitations => ({
       auth: 'registered',
       name: user.name,
-      invitations: inv.map((i) => ({ password: i.id, createdOn: i.createdOn })),
+      invitations: inv.map((i) => ({
+        password: i.id,
+        createdOn: (i.createdOn as any).toDate(), // TODO Hack
+      })),
     });
+
     return this.auth.currentUser().pipe(
       switchMap((u) => {
         switch (u.auth) {

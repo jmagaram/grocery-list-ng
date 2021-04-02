@@ -23,6 +23,14 @@ describe('password', () => {
     assertDoesNotInclude('I');
   });
 
+  it('password never has letter t', () => {
+    assertDoesNotInclude('t');
+  });
+
+  it('password never has letter f', () => {
+    assertDoesNotInclude('f');
+  });
+
   it('password never has letter o', () => {
     assertDoesNotInclude('o');
   });

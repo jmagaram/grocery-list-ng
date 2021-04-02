@@ -21,8 +21,14 @@ export class EmulatorUtilityService {
 
   // https://firebase.google.com/docs/reference/rest/auth#section-auth-emulator-clearaccounts
   // See .firebaserc for projectId
-  async deleteAllUserAccounts(projectId: string) {
-    const uri = `http://localhost:9099/emulator/v1/projects/${projectId}/accounts`;
+  async deleteUserAccounts(projectId: string, port: number = 9099) {
+    const uri = `http://localhost:${port}/emulator/v1/projects/${projectId}/accounts`;
+    await fetch(uri, { method: 'DELETE' });
+  }
+
+  // https://firebase.google.com/docs/emulator-suite/connect_firestore
+  async deleteFirestoreData(projectId: string, port: number = 8080) {
+    const uri = `http://localhost:${port}/emulator/v1/projects/${projectId}/databases/(default)/documents`;
     await fetch(uri, { method: 'DELETE' });
   }
 

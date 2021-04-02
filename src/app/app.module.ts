@@ -45,13 +45,17 @@ import { ShareUiTryComponent } from './share-ui-try/share-ui-try.component';
 import { MembersComponent } from './members/members.component';
 import { EmulatorUtilityComponent } from './emulator-utility/emulator-utility.component';
 
-const imports = [
-  BrowserModule,
-  AppRoutingModule,
+const firebaseImports = [
   AngularFireModule.initializeApp(environment.firebaseConfig),
   AngularFirestoreModule,
   AngularFireAuthModule,
   AngularFireFunctionsModule,
+];
+
+const imports = [
+  ...firebaseImports,
+  BrowserModule,
+  AppRoutingModule,
   ReactiveFormsModule,
   FormsModule, // TODO Might only need this in testing
   BrowserAnimationsModule,
@@ -89,7 +93,7 @@ const providers = [
   { provide: SETTINGS, useValue: { ignoreUndefinedProperties: true } },
 ];
 
-export const appConfig = { imports, providers };
+export const appConfig = { imports, firebaseImports, providers };
 
 @NgModule({
   declarations: [
