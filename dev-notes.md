@@ -1,6 +1,6 @@
 # Work items
 
-**Can't update Angular CLI to latest version.** #TODO
+**#TODO Can't update Angular CLI to latest version.**
 
 Tried to type `ng update @angular/cli @angular/core` and got this error...
 
@@ -8,34 +8,31 @@ Tried to type `ng update @angular/cli @angular/core` and got this error...
 
 Identified issue at https://github.com/angular-eslint/angular-eslint/issues/323
 
-**Possible EventEmitter memory leak** #TODO
+**#TODO Possible EventEmitter memory leak**
 
 When deleting a lot of users one at a time from emulator, see this message in the emulator output.
 
 > functions: Finished "deleteGroceryListOnUserDelete" in ~1s
 > (node:1832) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 log listeners added to [EventEmitter]. Use emitter.setMaxListeners() to increase limit
 
-**Figure out how to use Material theme colors** #TODO
+**#TODO Figure out how to use Material theme colors**
 
-**Spacing of input controls when errors are displayed** #TODO
+**#TODO Spacing of input controls when errors are displayed**
 
 https://github.com/angular/components/issues/4580
 
-**Testing form emits using Jasmine spy** #TODO
+**#TODO Testing form emits using Jasmine spy**
 
-**Enable Ivy language service** #TODO
-Disabled on 3/1/2020; buggy
-
-**Error handler to log exceptions** #TODO
+**#TODO Error handler to log exceptions**
 
 https://dev.to/buildmotion/angular-errorhandler-to-handle-or-not-to-handle-1e7l
 
-**Always import from 'firebase/app'** #TODO
+**#TODO Always import from 'firebase/app'**
 
 See https://firebase.google.com/support/release-notes/js#version_800_-_october_26_2020
 
 Use: `import firebase from 'firebase/app'`
 
-**Standardize display of snackbar messages** #TODO
+**#TODO Standardize display of snackbar messages**
 
-**Ensure not duplicating id field in both document and meta data in firestore** #TODO
+**#TODO Ensure not duplicating id field in both document and meta data in firestore**

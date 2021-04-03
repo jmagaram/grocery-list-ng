@@ -36,7 +36,6 @@ export type GroceryList = {
   members: Record<string, Omit<UserToken, 'uid'>>;
 };
 
-// TODO Ensure no list permissions
 export interface Invitation {
   id: string; // Must be unique within firestore
   owner: string;

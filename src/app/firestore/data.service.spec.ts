@@ -23,7 +23,6 @@ import { AngularFireAuth } from '@angular/fire/auth';
 //   });
 // });
 
-// TODO When delete a user, delete their invitations too
 describe('DataCommandsService', () => {
   let cmd: DataCommandsService;
   let qry: DataQueriesService;

@@ -85,7 +85,6 @@ export class DataQueriesService {
       .collection<Animal>(Collections.animals)
       .valueChanges({ idField: 'id' });
 
-  // TODO This is not working reliably
   ownedInvitations = (): Observable<OwnedInvitations> => {
     const notAuthenticated: OwnedInvitations = { auth: 'notAuthenticated' };
 
