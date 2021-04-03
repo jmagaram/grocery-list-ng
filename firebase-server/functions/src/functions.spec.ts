@@ -23,16 +23,15 @@ import { timeout } from '../../../src/app/common/utilities';
 describe('firebase functions', () => {
   const PROJECT_ID = 'firestore-emulator-tests-project';
   const test = testFeatures({ projectId: PROJECT_ID });
-  type UserRecord = admin.auth.UserRecord;
 
-  const BOB: UserRecord = test.auth.makeUserRecord({
+  const BOB = test.auth.makeUserRecord({
     uid: 'bob_id',
     email: 'bob@google.com',
     displayName: 'Bob',
     emailVerified: true,
   });
 
-  const ANONYMOUS = (): UserRecord => {
+  const ANONYMOUS = () => {
     let result = test.auth.makeUserRecord({
       uid: 'anonymous_id',
       emailVerified: false,
@@ -41,8 +40,17 @@ describe('firebase functions', () => {
     return result;
   };
 
+  const deleteCollection = async (name: string) => {
+    const docs = await admin.firestore().collection(name).get();
+    docs.forEach((d) => d.ref.delete());
+  };
+
   beforeEach(async () => {
+    // TODO This is not clearing the data
     await test.firestore.clearFirestoreData({ projectId: PROJECT_ID });
+
+    await deleteCollection(Collections.groceryList);
+    await deleteCollection(Collections.invitations);
   });
 
   after(() => {
@@ -50,11 +58,6 @@ describe('firebase functions', () => {
   });
 
   it('when create user, create corresponding grocery list', async () => {
-    await admin // TODO Figure out why this is necessary
-      .firestore()
-      .collection(Collections.groceryList)
-      .doc(BOB.uid)
-      .delete();
     const wrapped = test.wrap(createGroceryListOnUserCreate);
     await wrapped(BOB);
     let doc = await admin
@@ -72,11 +75,6 @@ describe('firebase functions', () => {
 
   it('when create anonymous user, create corresponding grocery list', async () => {
     let anonymous = ANONYMOUS();
-    await admin // TODO Figure out why this is necessary
-      .firestore()
-      .collection(Collections.groceryList)
-      .doc(anonymous.uid)
-      .delete();
     const wrapped = test.wrap(createGroceryListOnUserCreate);
     await wrapped(anonymous);
     let doc = await admin
@@ -115,12 +113,6 @@ describe('firebase functions', () => {
   });
 
   it('when delete user, delete their grocery list invitiations', async () => {
-    await admin // TODO Figure out why this is necessary
-      .firestore()
-      .collection(Collections.groceryList)
-      .doc(BOB.uid)
-      .delete();
-
     // TODO Brittle; not using a common constructor and type
     let invite = {
       owner: BOB.uid,
@@ -143,12 +135,12 @@ describe('firebase functions', () => {
       .where('owner', '==', BOB.uid);
 
     const docs = await query.get();
-    assert.equal(docs.size, inviteCount);
+    assert.strictEqual(docs.size, inviteCount);
 
     const wrapped = test.wrap(deleteInvitationsOnUserDelete);
     await wrapped(BOB);
     await timeout(1000); // Do not know why this is necessary
     const docsAfter = await query.get();
-    assert.equal(docsAfter.size, 0);
+    assert.strictEqual(docsAfter.size, 0);
   });
 });
