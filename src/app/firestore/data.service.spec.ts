@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { take } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 import { appConfig } from '../app.module';
 
 import {
@@ -46,9 +46,6 @@ describe('DataCommandsService', () => {
     expect(cmd).toBeTruthy();
   });
 
-  // TODO Test results seems to be unreliable, or code is unreliable
-  // Could be delay between propagating from server to client
-  // Could be delay in clearing the emulator (though adding time did not help)
   describe('createInvitation', () => {
     beforeEach(async () => {
       // TODO Make sure there is no way this is going to delete real data
@@ -57,30 +54,39 @@ describe('DataCommandsService', () => {
       await em.deleteFirestoreData(projectId);
     });
 
-    const create = async (
+    const tryCreate = async (
       name: string = 'bob',
-      email: string = 'bob@gmail.com'
-    ): Promise<OwnedInvitations & { auth: 'registered' }> => {
+      email: string = 'bob@gmail.com',
+      exists: (o: OwnedInvitations & { auth: 'registered' }) => boolean
+    ): Promise<OwnedInvitations> => {
       const usr = await em.createEmailPasswordUser(email);
       await em.signIn(usr.email);
       await cmd.createInvitation(name);
-      await timeout(500, true); // TODO Possible hack
-      const res = await qry.ownedInvitations().pipe(take(1)).toPromise();
-      if (res.auth === 'registered') {
-        return res;
-      } else {
-        throw new Error('Did not properly create the invitation.');
-      }
+      return await qry
+        .ownedInvitations()
+        .pipe(
+          filter((i) => i.auth === 'registered' && exists(i)),
+          take(1)
+        )
+        .toPromise();
     };
 
     it('exactly one returned', async () => {
-      const res = await create('kelly', 'kelly@gmail.com');
-      expect(res.invitations.length).toEqual(1);
+      const res = await tryCreate(
+        'kelly',
+        'kelly@gmail.com',
+        (i) => i.invitations.length === 1
+      );
+      expect(res).toBeTruthy();
     });
 
     it('when user name provided, it is returned', async () => {
-      const res = await create('joe', 'joe@gmail.com');
-      expect(res.name).toEqual('joe');
+      const res = await tryCreate(
+        'joe',
+        'joe@gmail.com',
+        (i) => i.name === 'joe'
+      );
+      expect(res).toBeTruthy();
     });
 
     it('when user name provided and name did not exist, token is updated', async () => {
@@ -92,10 +98,12 @@ describe('DataCommandsService', () => {
     });
 
     it('createdOn is close to now', async () => {
-      const res = await create('mark', 'mark@gmail.com');
-      const createdOnMs = res.invitations[0].createdOn.valueOf();
-      const nowMs = Date.now().valueOf();
-      expect(nowMs - createdOnMs).toBeLessThanOrEqual(10000);
+      const res = await tryCreate('mark', 'mark@gmail.com', (i) => {
+        const nowMs = Date.now().valueOf();
+        const createdOnMs = i.invitations[0].createdOn.valueOf();
+        return nowMs - createdOnMs < 10000;
+      });
+      expect(res).toBeTruthy();
     });
   });
 });
