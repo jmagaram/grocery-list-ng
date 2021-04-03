@@ -10,11 +10,6 @@ import {
 } from './utilities';
 
 describe('other utilities', () => {
-  it('timeout - return the value', async () => {
-    const result = await timeout(200, 'abc');
-    expect(result).toEqual('abc');
-  });
-
   const maybeToUpperCase = (s: string | null | undefined) =>
     exists(s) ? s.toUpperCase() : -1;
 

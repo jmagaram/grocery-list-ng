@@ -147,7 +147,7 @@ describe('firebase functions', () => {
 
     const wrapped = test.wrap(deleteInvitationsOnUserDelete);
     await wrapped(BOB);
-    await timeout(1000, false); // Do not know why this is necessary
+    await timeout(1000); // Do not know why this is necessary
     const docsAfter = await query.get();
     assert.equal(docsAfter.size, 0);
   });

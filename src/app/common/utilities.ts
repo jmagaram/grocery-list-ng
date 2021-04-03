@@ -27,8 +27,8 @@ export const mapString = <T, U>(
 export const visibleString = (s: string | undefined | null) =>
   mapString(s, (i) => i, undefined);
 
-export const timeout = <T>(ms: number, value: T) =>
-  new Promise<T>((resolve) => setTimeout(() => resolve(value), ms));
+export const timeout = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 
 export const exists = <T>(
   value: T | undefined | null
