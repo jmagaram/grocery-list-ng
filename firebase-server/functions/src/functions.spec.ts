@@ -3,12 +3,17 @@ import * as admin from 'firebase-admin';
 import { describe, it, beforeEach, after } from 'mocha';
 import { assert } from 'chai';
 import { GroceryList } from '../../../src/app/firestore/data-types';
-import { createGroceryList } from '../../../src/app/firestore/data-functions';
+import {
+  createGroceryList,
+  invitationPassword,
+} from '../../../src/app/firestore/data-functions';
 import {
   createGroceryListOnUserCreate,
   deleteGroceryListOnUserDelete,
+  deleteInvitationsOnUserDelete,
 } from './functions';
 import { Collections } from '../../../src/app/firestore/data.service';
+import { timeout } from '../../../src/app/common/utilities';
 
 // Maybe type this in console before running tests and starting the emulator but
 // it seems to work from the Mocha explorer when setting the environment
@@ -100,12 +105,50 @@ describe('firebase functions', () => {
       .doc(groceryListDoc.id)
       .set(groceryListDoc);
     const wrapped = test.wrap(deleteGroceryListOnUserDelete);
-    await wrapped(BOB); // TODO What is this wrapped thing for? On a constant?
+    await wrapped(BOB);
     let doc = await admin
       .firestore()
       .collection(Collections.groceryList)
       .doc(BOB.uid)
       .get();
     assert.isFalse(doc.exists);
+  });
+
+  it('when delete user, delete their grocery list invitiations', async () => {
+    await admin // TODO Figure out why this is necessary
+      .firestore()
+      .collection(Collections.groceryList)
+      .doc(BOB.uid)
+      .delete();
+
+    // TODO Brittle; not using a common constructor and type
+    let invite = {
+      owner: BOB.uid,
+      createdOn: admin.firestore.FieldValue.serverTimestamp(),
+      version: '1',
+    };
+    const inviteCount = 20;
+    for (let i = 0; i < inviteCount; i++) {
+      const password = invitationPassword();
+      await admin
+        .firestore()
+        .collection(Collections.invitations)
+        .doc(password)
+        .set(invite);
+    }
+
+    const query = admin
+      .firestore()
+      .collection(Collections.invitations)
+      .where('owner', '==', BOB.uid);
+
+    const docs = await query.get();
+    assert.equal(docs.size, inviteCount);
+
+    const wrapped = test.wrap(deleteInvitationsOnUserDelete);
+    await wrapped(BOB);
+    await timeout(1000, false); // Do not know why this is necessary
+    const docsAfter = await query.get();
+    assert.equal(docsAfter.size, 0);
   });
 });

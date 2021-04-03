@@ -78,6 +78,19 @@ export const deleteGroceryListOnUserDelete = functions.auth
       .delete();
   });
 
+export const deleteInvitationsOnUserDelete = functions.auth
+  .user()
+  .onDelete(async (user) => {
+    const invites = await admin
+      .firestore()
+      .collection(Collections.invitations)
+      .where('owner', '==', user.uid)
+      .get();
+    invites.forEach(async (d) => {
+      await d.ref.delete();
+    });
+  });
+
 export const createGroceryListOnUserCreate = functions.auth
   .user()
   .onCreate(async (user) => {
