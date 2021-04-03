@@ -9,7 +9,6 @@ import {
 } from './data.service';
 import { EmulatorUtilityService } from './emulator-utility.service';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { timeout } from '../common/utilities';
 
 // describe('DataQueriesService', () => {
 //   let service: DataQueriesService;
